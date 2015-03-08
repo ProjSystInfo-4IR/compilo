@@ -1,0 +1,691 @@
+Terminaux inutilisés dans la grammaire
+
+   EXP
+   TXT
+   tSPACE
+   tDEUXPOINTS
+   tECHO
+
+
+État 21 conflits: 1 réduction/réduction
+État 25 conflits: 5 réduction/réduction
+État 35 conflits: 5 réduction/réduction
+
+
+Grammaire
+
+    0 $accept: Input $end
+
+    1 Input: Debut
+
+    2 Debut: tMAIN tPARO tPARF tACCO Operations Fin
+
+    3 Operations: Declarations Instructions
+
+    4 Declarations: Declaration Declarations
+    5             | /* vide */
+
+    6 Declaration: tCONST tINT VAR tFININSTRUCTION
+    7            | tINT VAR tFININSTRUCTION
+    8            | tINT VariablesDeclarations
+    9            | tCONST tINT ConstVariablesDeclarations
+
+   10 VariablesDeclarations: VAR tVIRGULE VariablesDeclarations
+   11                      | VAR tFININSTRUCTION
+
+   12 ConstVariablesDeclarations: VAR tVIRGULE ConstVariablesDeclarations
+   13                           | VAR tFININSTRUCTION
+
+   14 Instructions: Instruction
+   15             | Instruction Instructions
+   16             | /* vide */
+
+   17 Instruction: Affectation tFININSTRUCTION
+   18            | error tFININSTRUCTION
+
+   19 Affectation: VAR tEGAL Expression
+
+   20 Expression: NOMBRE
+   21           | tPARO Expression tPARF
+   22           | Expression tPLUS Expression
+   23           | Expression tMOINS Expression
+   24           | Expression tFOIS Expression
+   25           | Expression tDIVISE Expression
+   26           | tMOINS Expression
+   27           | Expression tPUISSANCE Expression
+
+   28 Fin: tACCF
+
+
+Terminaux, suivis des règles où ils apparaissent
+
+$end (0) 0
+error (256) 18
+NOMBRE (258) 20
+EXP (259)
+TXT (260)
+tEGAL (261) 19
+tPLUS (262) 22
+tMOINS (263) 23 26
+tFOIS (264) 24
+tDIVISE (265) 25
+tPUISSANCE (266) 27
+tPARO (267) 2 21
+tPARF (268) 2 21
+tACCO (269) 2
+tACCF (270) 28
+tINT (271) 6 7 8 9
+tCONST (272) 6 9
+tSPACE (273)
+tVIRGULE (274) 10 12
+tFININSTRUCTION (275) 6 7 11 13 17 18
+tDEUXPOINTS (276)
+tECHO (277)
+tMAIN (278) 2
+VAR (279) 6 7 10 11 12 13 19
+
+
+Non-terminaux, suivis des règles où ils apparaissent
+
+$accept (25)
+    à gauche: 0
+Input (26)
+    à gauche: 1, à droite: 0
+Debut (27)
+    à gauche: 2, à droite: 1
+Operations (28)
+    à gauche: 3, à droite: 2
+Declarations (29)
+    à gauche: 4 5, à droite: 3 4
+Declaration (30)
+    à gauche: 6 7 8 9, à droite: 4
+VariablesDeclarations (31)
+    à gauche: 10 11, à droite: 8 10
+ConstVariablesDeclarations (32)
+    à gauche: 12 13, à droite: 9 12
+Instructions (33)
+    à gauche: 14 15 16, à droite: 3 15
+Instruction (34)
+    à gauche: 17 18, à droite: 14 15
+Affectation (35)
+    à gauche: 19, à droite: 17
+Expression (36)
+    à gauche: 20 21 22 23 24 25 26 27, à droite: 19 21 22 23 24 25
+    26 27
+Fin (37)
+    à gauche: 28, à droite: 2
+
+
+état 0
+
+    0 $accept: . Input $end
+
+    tMAIN  décalage et aller à l'état 1
+
+    Input  aller à l'état 2
+    Debut  aller à l'état 3
+
+
+état 1
+
+    2 Debut: tMAIN . tPARO tPARF tACCO Operations Fin
+
+    tPARO  décalage et aller à l'état 4
+
+
+état 2
+
+    0 $accept: Input . $end
+
+    $end  décalage et aller à l'état 5
+
+
+état 3
+
+    1 Input: Debut .
+
+    $défaut  réduction par utilisation de la règle 1 (Input)
+
+
+état 4
+
+    2 Debut: tMAIN tPARO . tPARF tACCO Operations Fin
+
+    tPARF  décalage et aller à l'état 6
+
+
+état 5
+
+    0 $accept: Input $end .
+
+    $défaut  accepter
+
+
+état 6
+
+    2 Debut: tMAIN tPARO tPARF . tACCO Operations Fin
+
+    tACCO  décalage et aller à l'état 7
+
+
+état 7
+
+    2 Debut: tMAIN tPARO tPARF tACCO . Operations Fin
+
+    tINT    décalage et aller à l'état 8
+    tCONST  décalage et aller à l'état 9
+
+    $défaut  réduction par utilisation de la règle 5 (Declarations)
+
+    Operations    aller à l'état 10
+    Declarations  aller à l'état 11
+    Declaration   aller à l'état 12
+
+
+état 8
+
+    7 Declaration: tINT . VAR tFININSTRUCTION
+    8            | tINT . VariablesDeclarations
+
+    VAR  décalage et aller à l'état 13
+
+    VariablesDeclarations  aller à l'état 14
+
+
+état 9
+
+    6 Declaration: tCONST . tINT VAR tFININSTRUCTION
+    9            | tCONST . tINT ConstVariablesDeclarations
+
+    tINT  décalage et aller à l'état 15
+
+
+état 10
+
+    2 Debut: tMAIN tPARO tPARF tACCO Operations . Fin
+
+    tACCF  décalage et aller à l'état 16
+
+    Fin  aller à l'état 17
+
+
+état 11
+
+    3 Operations: Declarations . Instructions
+
+    error  décalage et aller à l'état 18
+    VAR    décalage et aller à l'état 19
+
+    tACCF  réduction par utilisation de la règle 16 (Instructions)
+
+    Instructions  aller à l'état 20
+    Instruction   aller à l'état 21
+    Affectation   aller à l'état 22
+
+
+état 12
+
+    4 Declarations: Declaration . Declarations
+
+    tINT    décalage et aller à l'état 8
+    tCONST  décalage et aller à l'état 9
+
+    $défaut  réduction par utilisation de la règle 5 (Declarations)
+
+    Declarations  aller à l'état 23
+    Declaration   aller à l'état 12
+
+
+état 13
+
+    7 Declaration: tINT VAR . tFININSTRUCTION
+   10 VariablesDeclarations: VAR . tVIRGULE VariablesDeclarations
+   11                      | VAR . tFININSTRUCTION
+
+    tVIRGULE         décalage et aller à l'état 24
+    tFININSTRUCTION  décalage et aller à l'état 25
+
+
+état 14
+
+    8 Declaration: tINT VariablesDeclarations .
+
+    $défaut  réduction par utilisation de la règle 8 (Declaration)
+
+
+état 15
+
+    6 Declaration: tCONST tINT . VAR tFININSTRUCTION
+    9            | tCONST tINT . ConstVariablesDeclarations
+
+    VAR  décalage et aller à l'état 26
+
+    ConstVariablesDeclarations  aller à l'état 27
+
+
+état 16
+
+   28 Fin: tACCF .
+
+    $défaut  réduction par utilisation de la règle 28 (Fin)
+
+
+état 17
+
+    2 Debut: tMAIN tPARO tPARF tACCO Operations Fin .
+
+    $défaut  réduction par utilisation de la règle 2 (Debut)
+
+
+état 18
+
+   18 Instruction: error . tFININSTRUCTION
+
+    tFININSTRUCTION  décalage et aller à l'état 28
+
+
+état 19
+
+   19 Affectation: VAR . tEGAL Expression
+
+    tEGAL  décalage et aller à l'état 29
+
+
+état 20
+
+    3 Operations: Declarations Instructions .
+
+    $défaut  réduction par utilisation de la règle 3 (Operations)
+
+
+état 21
+
+   14 Instructions: Instruction .
+   15             | Instruction . Instructions
+
+    error  décalage et aller à l'état 18
+    VAR    décalage et aller à l'état 19
+
+    tACCF  réduction par utilisation de la règle 14 (Instructions)
+    tACCF  [réduction par utilisation de la règle 16 (Instructions)]
+
+    Instructions  aller à l'état 30
+    Instruction   aller à l'état 21
+    Affectation   aller à l'état 22
+
+
+état 22
+
+   17 Instruction: Affectation . tFININSTRUCTION
+
+    tFININSTRUCTION  décalage et aller à l'état 31
+
+
+état 23
+
+    4 Declarations: Declaration Declarations .
+
+    $défaut  réduction par utilisation de la règle 4 (Declarations)
+
+
+état 24
+
+   10 VariablesDeclarations: VAR tVIRGULE . VariablesDeclarations
+
+    VAR  décalage et aller à l'état 32
+
+    VariablesDeclarations  aller à l'état 33
+
+
+état 25
+
+    7 Declaration: tINT VAR tFININSTRUCTION .
+   11 VariablesDeclarations: VAR tFININSTRUCTION .
+
+    error     réduction par utilisation de la règle 7 (Declaration)
+    error     [réduction par utilisation de la règle 11 (VariablesDeclarations)]
+    tACCF     réduction par utilisation de la règle 7 (Declaration)
+    tACCF     [réduction par utilisation de la règle 11 (VariablesDeclarations)]
+    tINT      réduction par utilisation de la règle 7 (Declaration)
+    tINT      [réduction par utilisation de la règle 11 (VariablesDeclarations)]
+    tCONST    réduction par utilisation de la règle 7 (Declaration)
+    tCONST    [réduction par utilisation de la règle 11 (VariablesDeclarations)]
+    VAR       réduction par utilisation de la règle 7 (Declaration)
+    VAR       [réduction par utilisation de la règle 11 (VariablesDeclarations)]
+    $défaut  réduction par utilisation de la règle 7 (Declaration)
+
+
+état 26
+
+    6 Declaration: tCONST tINT VAR . tFININSTRUCTION
+   12 ConstVariablesDeclarations: VAR . tVIRGULE ConstVariablesDeclarations
+   13                           | VAR . tFININSTRUCTION
+
+    tVIRGULE         décalage et aller à l'état 34
+    tFININSTRUCTION  décalage et aller à l'état 35
+
+
+état 27
+
+    9 Declaration: tCONST tINT ConstVariablesDeclarations .
+
+    $défaut  réduction par utilisation de la règle 9 (Declaration)
+
+
+état 28
+
+   18 Instruction: error tFININSTRUCTION .
+
+    $défaut  réduction par utilisation de la règle 18 (Instruction)
+
+
+état 29
+
+   19 Affectation: VAR tEGAL . Expression
+
+    NOMBRE  décalage et aller à l'état 36
+    tMOINS  décalage et aller à l'état 37
+    tPARO   décalage et aller à l'état 38
+
+    Expression  aller à l'état 39
+
+
+état 30
+
+   15 Instructions: Instruction Instructions .
+
+    $défaut  réduction par utilisation de la règle 15 (Instructions)
+
+
+état 31
+
+   17 Instruction: Affectation tFININSTRUCTION .
+
+    $défaut  réduction par utilisation de la règle 17 (Instruction)
+
+
+état 32
+
+   10 VariablesDeclarations: VAR . tVIRGULE VariablesDeclarations
+   11                      | VAR . tFININSTRUCTION
+
+    tVIRGULE         décalage et aller à l'état 24
+    tFININSTRUCTION  décalage et aller à l'état 40
+
+
+état 33
+
+   10 VariablesDeclarations: VAR tVIRGULE VariablesDeclarations .
+
+    $défaut  réduction par utilisation de la règle 10 (VariablesDeclarations)
+
+
+état 34
+
+   12 ConstVariablesDeclarations: VAR tVIRGULE . ConstVariablesDeclarations
+
+    VAR  décalage et aller à l'état 41
+
+    ConstVariablesDeclarations  aller à l'état 42
+
+
+état 35
+
+    6 Declaration: tCONST tINT VAR tFININSTRUCTION .
+   13 ConstVariablesDeclarations: VAR tFININSTRUCTION .
+
+    error     réduction par utilisation de la règle 6 (Declaration)
+    error     [réduction par utilisation de la règle 13 (ConstVariablesDeclarations)]
+    tACCF     réduction par utilisation de la règle 6 (Declaration)
+    tACCF     [réduction par utilisation de la règle 13 (ConstVariablesDeclarations)]
+    tINT      réduction par utilisation de la règle 6 (Declaration)
+    tINT      [réduction par utilisation de la règle 13 (ConstVariablesDeclarations)]
+    tCONST    réduction par utilisation de la règle 6 (Declaration)
+    tCONST    [réduction par utilisation de la règle 13 (ConstVariablesDeclarations)]
+    VAR       réduction par utilisation de la règle 6 (Declaration)
+    VAR       [réduction par utilisation de la règle 13 (ConstVariablesDeclarations)]
+    $défaut  réduction par utilisation de la règle 6 (Declaration)
+
+
+état 36
+
+   20 Expression: NOMBRE .
+
+    $défaut  réduction par utilisation de la règle 20 (Expression)
+
+
+état 37
+
+   26 Expression: tMOINS . Expression
+
+    NOMBRE  décalage et aller à l'état 36
+    tMOINS  décalage et aller à l'état 37
+    tPARO   décalage et aller à l'état 38
+
+    Expression  aller à l'état 43
+
+
+état 38
+
+   21 Expression: tPARO . Expression tPARF
+
+    NOMBRE  décalage et aller à l'état 36
+    tMOINS  décalage et aller à l'état 37
+    tPARO   décalage et aller à l'état 38
+
+    Expression  aller à l'état 44
+
+
+état 39
+
+   19 Affectation: VAR tEGAL Expression .
+   22 Expression: Expression . tPLUS Expression
+   23           | Expression . tMOINS Expression
+   24           | Expression . tFOIS Expression
+   25           | Expression . tDIVISE Expression
+   27           | Expression . tPUISSANCE Expression
+
+    tPLUS       décalage et aller à l'état 45
+    tMOINS      décalage et aller à l'état 46
+    tFOIS       décalage et aller à l'état 47
+    tDIVISE     décalage et aller à l'état 48
+    tPUISSANCE  décalage et aller à l'état 49
+
+    $défaut  réduction par utilisation de la règle 19 (Affectation)
+
+
+état 40
+
+   11 VariablesDeclarations: VAR tFININSTRUCTION .
+
+    $défaut  réduction par utilisation de la règle 11 (VariablesDeclarations)
+
+
+état 41
+
+   12 ConstVariablesDeclarations: VAR . tVIRGULE ConstVariablesDeclarations
+   13                           | VAR . tFININSTRUCTION
+
+    tVIRGULE         décalage et aller à l'état 34
+    tFININSTRUCTION  décalage et aller à l'état 50
+
+
+état 42
+
+   12 ConstVariablesDeclarations: VAR tVIRGULE ConstVariablesDeclarations .
+
+    $défaut  réduction par utilisation de la règle 12 (ConstVariablesDeclarations)
+
+
+état 43
+
+   22 Expression: Expression . tPLUS Expression
+   23           | Expression . tMOINS Expression
+   24           | Expression . tFOIS Expression
+   25           | Expression . tDIVISE Expression
+   26           | tMOINS Expression .
+   27           | Expression . tPUISSANCE Expression
+
+    tPUISSANCE  décalage et aller à l'état 49
+
+    $défaut  réduction par utilisation de la règle 26 (Expression)
+
+
+état 44
+
+   21 Expression: tPARO Expression . tPARF
+   22           | Expression . tPLUS Expression
+   23           | Expression . tMOINS Expression
+   24           | Expression . tFOIS Expression
+   25           | Expression . tDIVISE Expression
+   27           | Expression . tPUISSANCE Expression
+
+    tPLUS       décalage et aller à l'état 45
+    tMOINS      décalage et aller à l'état 46
+    tFOIS       décalage et aller à l'état 47
+    tDIVISE     décalage et aller à l'état 48
+    tPUISSANCE  décalage et aller à l'état 49
+    tPARF       décalage et aller à l'état 51
+
+
+état 45
+
+   22 Expression: Expression tPLUS . Expression
+
+    NOMBRE  décalage et aller à l'état 36
+    tMOINS  décalage et aller à l'état 37
+    tPARO   décalage et aller à l'état 38
+
+    Expression  aller à l'état 52
+
+
+état 46
+
+   23 Expression: Expression tMOINS . Expression
+
+    NOMBRE  décalage et aller à l'état 36
+    tMOINS  décalage et aller à l'état 37
+    tPARO   décalage et aller à l'état 38
+
+    Expression  aller à l'état 53
+
+
+état 47
+
+   24 Expression: Expression tFOIS . Expression
+
+    NOMBRE  décalage et aller à l'état 36
+    tMOINS  décalage et aller à l'état 37
+    tPARO   décalage et aller à l'état 38
+
+    Expression  aller à l'état 54
+
+
+état 48
+
+   25 Expression: Expression tDIVISE . Expression
+
+    NOMBRE  décalage et aller à l'état 36
+    tMOINS  décalage et aller à l'état 37
+    tPARO   décalage et aller à l'état 38
+
+    Expression  aller à l'état 55
+
+
+état 49
+
+   27 Expression: Expression tPUISSANCE . Expression
+
+    NOMBRE  décalage et aller à l'état 36
+    tMOINS  décalage et aller à l'état 37
+    tPARO   décalage et aller à l'état 38
+
+    Expression  aller à l'état 56
+
+
+état 50
+
+   13 ConstVariablesDeclarations: VAR tFININSTRUCTION .
+
+    $défaut  réduction par utilisation de la règle 13 (ConstVariablesDeclarations)
+
+
+état 51
+
+   21 Expression: tPARO Expression tPARF .
+
+    $défaut  réduction par utilisation de la règle 21 (Expression)
+
+
+état 52
+
+   22 Expression: Expression . tPLUS Expression
+   22           | Expression tPLUS Expression .
+   23           | Expression . tMOINS Expression
+   24           | Expression . tFOIS Expression
+   25           | Expression . tDIVISE Expression
+   27           | Expression . tPUISSANCE Expression
+
+    tFOIS       décalage et aller à l'état 47
+    tDIVISE     décalage et aller à l'état 48
+    tPUISSANCE  décalage et aller à l'état 49
+
+    $défaut  réduction par utilisation de la règle 22 (Expression)
+
+
+état 53
+
+   22 Expression: Expression . tPLUS Expression
+   23           | Expression . tMOINS Expression
+   23           | Expression tMOINS Expression .
+   24           | Expression . tFOIS Expression
+   25           | Expression . tDIVISE Expression
+   27           | Expression . tPUISSANCE Expression
+
+    tFOIS       décalage et aller à l'état 47
+    tDIVISE     décalage et aller à l'état 48
+    tPUISSANCE  décalage et aller à l'état 49
+
+    $défaut  réduction par utilisation de la règle 23 (Expression)
+
+
+état 54
+
+   22 Expression: Expression . tPLUS Expression
+   23           | Expression . tMOINS Expression
+   24           | Expression . tFOIS Expression
+   24           | Expression tFOIS Expression .
+   25           | Expression . tDIVISE Expression
+   27           | Expression . tPUISSANCE Expression
+
+    tPUISSANCE  décalage et aller à l'état 49
+
+    $défaut  réduction par utilisation de la règle 24 (Expression)
+
+
+état 55
+
+   22 Expression: Expression . tPLUS Expression
+   23           | Expression . tMOINS Expression
+   24           | Expression . tFOIS Expression
+   25           | Expression . tDIVISE Expression
+   25           | Expression tDIVISE Expression .
+   27           | Expression . tPUISSANCE Expression
+
+    tPUISSANCE  décalage et aller à l'état 49
+
+    $défaut  réduction par utilisation de la règle 25 (Expression)
+
+
+état 56
+
+   22 Expression: Expression . tPLUS Expression
+   23           | Expression . tMOINS Expression
+   24           | Expression . tFOIS Expression
+   25           | Expression . tDIVISE Expression
+   27           | Expression . tPUISSANCE Expression
+   27           | Expression tPUISSANCE Expression .
+
+    tPUISSANCE  décalage et aller à l'état 49
+
+    $défaut  réduction par utilisation de la règle 27 (Expression)

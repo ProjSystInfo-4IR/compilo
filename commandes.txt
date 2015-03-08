@@ -1,0 +1,2 @@
+// tester compilateur avec un programme C  t.c
+cat t.c | ./cible.c
