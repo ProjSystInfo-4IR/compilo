@@ -43,10 +43,9 @@ printf     { return tECHO  ; }
 \n         { }      
 ,          { return tVIRGULE ; }
 ;          { return tFININSTRUCTION; }
-\^         { return tPUISSANCE; }
 {NOMVAR}   { yylval.chaine=strdup(yytext) ; return VAR ; }
 {EXPONENTIEL} { return EXP /* printf("Entier (exponentiel): %s\n", yytext) */ ;}   
-{DIGITS} { /* [0-9]+ matches a string of one or more digits */ return NOMBRE ;}
+{DIGITS} { /* [0-9]+ matches a string of one or more digits */ yylval.nombre=atoi(yytext) ; return NOMBRE ;}
 {STRING} { return TXT ; }
 
 .|\n    { printf("[LEX] : Non reconnu\n");  }
