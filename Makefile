@@ -25,3 +25,6 @@ y.tab.c: syntaxic_analyzer.y
 
 run:
 	./cible
+
+test:
+	test_files/run-all-tests.sh
