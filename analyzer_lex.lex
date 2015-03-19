@@ -45,11 +45,11 @@ printf     { return tECHO  ; }
 ;          { return tFININSTRUCTION; }
 \^         { return tPUISSANCE; }
 {NOMVAR}   { yylval.chaine=strdup(yytext) ; return VAR ; }
-{EXPONENTIEL} { return EXP /* printf("Entier (exponentiel): %s\n", yytext) */ ;}   
+{EXPONENTIEL} { return EXP /* printf("Entier (exponentiel): %s\n", yytext) */ ;}
 {DIGITS} { /* [0-9]+ matches a string of one or more digits */ return NOMBRE ;}
 {STRING} { return TXT ; }
 
-.|\n    { printf("[LEX] : Non reconnu\n");  }
+.|\n    { printf("[LEX] : Non reconnu\n"); }
  
 %%
 

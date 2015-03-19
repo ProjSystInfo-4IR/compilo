@@ -27,3 +27,12 @@
 *.i*86
 *.x86_64
 *.hex
+cible
+
+# Lex 
+lex.yy.c
+
+# Yacc 
+y.tab.c
+y.tab.h
+y.output
