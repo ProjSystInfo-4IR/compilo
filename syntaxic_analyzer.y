@@ -170,4 +170,6 @@ int main(void) {
 
  // affichage table des symboles 
   ts_print() ; 
+
+  return 0;
 }

@@ -14,14 +14,22 @@ STRING "[.]*"
 
 /*** Comment handle ***/
 
-%x COMMENT
+/* %x : exclusive start condition >< %s : exclusive start condition */
+%x BLOCK_COMMENT
+%x LINE_COMMENT
 %%
 
-"/*" {BEGIN COMMENT;}
-<COMMENT>"*/" {BEGIN INITIAL;printf("\n");}
+"/*" 					{BEGIN BLOCK_COMMENT;}
+<BLOCK_COMMENT>"*/" 	{BEGIN INITIAL;}
+<BLOCK_COMMENT>.		{}                // consume all characters 
+<BLOCK_COMMENT>\n     	{}                // consume all lines
 
 
-     /*** Rules section ***/
+"//"         			{BEGIN LINE_COMMENT;}
+<LINE_COMMENT>\n 		{BEGIN INITIAL;}
+<LINE_COMMENT>.         {}                // consume all characters
+
+ /*** Rules section ***/
 
 [/t]+$ ; // élimine blancs et tabs en fin de ligne
  
