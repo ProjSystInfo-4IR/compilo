@@ -1,2 +1,2 @@
 # compilo
-Compilateur un utilisant les outils LEX et YACC
+Compilateur du langage C (simplifié) basé sur LEX et YACC en instructions assembleur orientées mémoire

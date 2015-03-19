@@ -1,6 +1,8 @@
 
 /*  tab_symboles.h  */ 
 
+extern char* NOM_VAR_ZERO;
+
 //fonction qui met a zero l'index et qui alloue mémoire au tableau et l'initialise (memset)
 void ts_init() ;
 
@@ -19,7 +21,7 @@ void ts_affect(char * nom);
 
 /*  GETTERS  */ 
 int est_constant(char * nom) ;
-void est_initialise(char * nom) ;
+int est_initialise(char * nom) ;
 void ts_print();
 
 /*  SETTERS  */  

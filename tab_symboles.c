@@ -2,10 +2,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h> 
-
+#include "tab_symboles.h"
 #define TAILLE 1024
+#define MIN_TAILLE 1
 
-
+char* NOM_VAR_ZERO = "VAR_ZERO";
 // Tableau des symboles -> 4 paramètres : nom, initialisé ? , constant ? , adresse mémoire
 struct ts_parametres {
   char * nom ; 
@@ -27,6 +28,9 @@ void ts_init() {
   //fonction qui met a zero l'index et qui alloue mémoire au tableau et l'initialise (memset)
   index_tab = 0 ; 
   memset(table_symboles, 0 , TAILLE*sizeof(struct ts_parametres)) ; 
+  ts_ajouter(NOM_VAR_ZERO, 1, 1);
+  printf("# Initialisation du tableau de symboles\n");
+  printf("AFC %d 0\n", ts_addr(NOM_VAR_ZERO));
 }
 
 
@@ -44,21 +48,22 @@ int ts_addr(char * nom) {
 }
 
 
-// cherche si le nom de la variable existe déjà (si oui : erreur) puis ajout dans table des symboles 
+// ajout dans table des symboles 
 void ts_ajouter(char * nom, int est_constant, int est_initialise) {
-  if (ts_addr(nom) == -1) {
     table_symboles[index_tab].nom = nom ; 
     table_symboles[index_tab].is_constant = est_constant ; 
-    table_symboles[index_tab].is_initialized = 0 ; 
+    table_symboles[index_tab].is_initialized = est_initialise ; 
     table_symboles[index_tab].adrMem = index_tab ; 
     index_tab++ ;   
-  }
-  else { printf("ERREUR : Variable déjà déclarée") ; }
 }
 
 
 // supprimer variable en mémoire (pas de désallocation)
 void ts_depiler() {
+  if (index_tab == MIN_TAILLE) {
+    printf("Erreur : Dépiler impossible\n");
+    return;
+  }
   index_tab-- ;   
 }
 
