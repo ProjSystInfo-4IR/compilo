@@ -83,10 +83,10 @@ int est_initialise(char * nom) {
 void ts_print() {
   int i ; 
   printf("\nAFFICHAGE TABLE DES SYMBOLES \n") ;
-  printf("Nom - Initialise - Constant - Adresse\n") ;
+  printf("    Nom     -    Initialise - Constant - Adresse\n") ;
  
   for(i = 0 ; i < index_tab ; i++){
-    printf("%s  %d  %d  %d\n", table_symboles[i].nom, table_symboles[i].is_initialized, table_symboles[i].is_constant, table_symboles[i].adrMem) ; 
+    printf("%10s  %10d  %10d  %10d\n", table_symboles[i].nom, table_symboles[i].is_initialized, table_symboles[i].is_constant, table_symboles[i].adrMem) ; 
   }
   printf("\n") ;
 }

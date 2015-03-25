@@ -2,11 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+	#include <string.h>
 #include "tab_symboles.h"
 #include "tab_ic.h"
 
 #define NB_VAR_TEMPORAIRE_MAX 50
-#define ASM_CAPACITY 1000
+// Nb maximum de characteres dans une ligne de code assembleur que le compilateur peut générer
+#define LINE_CAPACITY 100
+#define WORD_CAPACITY 32
 
 int ligneAsmCourant = 1;
 int flagConst ;
@@ -200,6 +203,7 @@ IfBloc: tIF tPARO Expression
 	    tPARF tACCO Instructions tACCF 
 	    {
 	    	tic_set_dest(ligneAsmCourant);
+	    	printf ("Fin du truc if \n") ;
 		}
 	    ; 
 
@@ -212,10 +216,43 @@ int yyerror(char *s) {
   printf("%s\n",s);
 }
 
-void remplacerMarqueursTIC() {
-	char code[ASM_CAPACITY];
-	FILE* fp = fopen("o.asm", "r");
+void remplacerMarqueursTIC(FILE* fileAsm) {
+	char* line = NULL;
+	char* ptr = NULL;
+	char possibleMarqueur[strlen(MARQUEUR_TIC)];
+	char c;
+	int lineNum = 1;
+	int read;
+	size_t len;
+	char oneword[WORD_CAPACITY];
+	int arg1;
 
+	FILE* fp2 = fopen("o2.asm", "w");
+	// read all line
+	
+	while((read = getline(&line, &len, fileAsm)) != -1) {
+		printf("%d : %s", lineNum, line);
+		ptr = line;
+		// read each word of line
+		do {
+	      	c = sscanf(ptr,"%s %d %s",oneword, &arg1, possibleMarqueur);   //got one word from the file 
+	      	if (!strcmp(possibleMarqueur, MARQUEUR_TIC)) {
+	      		printf("Yahooo on line %d, to replace by %d\n", lineNum, tic_get_dest(lineNum));
+	      	}
+		 	ptr = strstr(ptr, oneword);     // Find where the current word starts.
+    		ptr += strlen(oneword);         // Skip past the current word.
+
+    		// erase possibleMarqueur
+    		strcpy(possibleMarqueur, "000");
+	   } while (c == 0 && c != EOF);                  // repeat until EOF        
+		lineNum++;
+	}
+
+	//fclose(fp1);
+	fclose(fp2);
+	if (line) {
+      free(line);
+  	}
 }
 
 int main(void) {
@@ -224,8 +261,9 @@ int main(void) {
 
   // initaliser tab IC
   tic_init();
-
-  fp = fopen("o.asm","w");
+  
+  // open file on mode readwrite
+  fp = fopen("o.asm","r+");
   fprintf(fp, "AFC %d 0\n", ts_addr(NOM_VAR_ZERO));
   ligneAsmCourant++;
   // parser
@@ -236,8 +274,13 @@ int main(void) {
   printf("Nb var temporaires : %d\n", nbVarTmpCourant);
   printf("Nb lignes asm : %d\n", ligneAsmCourant);
 
+  
+  // prepare fp to be read by remplacerMarqueursTIC
+  rewind(fp);
+  remplacerMarqueursTIC(fp);
+
+  fclose(fp);
   // affichage table TIC
   tic_print();
-  fclose(fp);
   return 0;
 }

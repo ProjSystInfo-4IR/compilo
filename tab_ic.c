@@ -59,7 +59,7 @@ void tic_print() {
   printf("Source - Destination\n") ;
  
   for(i = 0 ; i < index_tab_tic ; i++){
-    printf("   %d          %d\n", pile[i].addr_src, pile[i].addr_dst) ; 
+    printf("%4d       %4d\n", pile[i].addr_src, pile[i].addr_dst) ; 
   }
   printf("\n") ;
 }
@@ -86,16 +86,13 @@ void tic_set_dest(int dest) {
 }
 
 /* GETTERS */
-int tic_get_source() {
-  if (pile[index_tab_tic-1].addr_src == -1) 
-    printf("TIC : addresse non inialise\n");
-  return pile[index_tab_tic-1].addr_src;
-}
-
-int tic_get_dest() {  
-  if (pile[index_tab_tic-1].addr_dst == -1) 
-    printf("TIC : addresse non inialise\n"); 
-  return pile[index_tab_tic-1].addr_dst; 
+int tic_get_dest(int src) {  int i;
+  for (i = 0; i < index_tab_tic; i++) {
+    if (pile[i].addr_src == src) {
+      return pile[i].addr_dst;
+    }
+  }
+  return -1;
 }
 
 

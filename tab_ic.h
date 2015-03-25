@@ -19,8 +19,7 @@ void tic_set_source(int source);
 void tic_set_dest(int dest);
 
 /*  GETTERS  */ 
-int tic_get_source();
-int tic_get_dest();
+int tic_get_dest(int src);
 
 // printer
 void tic_print();
