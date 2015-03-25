@@ -79,6 +79,16 @@ Instructions: Instruction  Instructions
 			;
 
 Instruction:		Affectation tFININSTRUCTION
+			|  tECHO tPARO VAR tPARF tFININSTRUCTION    {
+													if (ts_addr($3) == -1) { 
+														printf("Erreur : variable non déclarée\n");
+													} else {
+														if (!est_initialise($3)) {
+															printf("# Warning : variable non initialisée\n");
+														}
+														printf("PRI %d\n", ts_addr($3));
+													}
+														}
 			|  error  tFININSTRUCTION	{ yyerrok; }
 			;
 
