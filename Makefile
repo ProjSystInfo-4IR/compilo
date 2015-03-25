@@ -5,8 +5,8 @@ CFLAGS=-Wall -Werror -c
 
 all: $(TARGETS)
 
-cible: y.tab.c lex.yy.c tab_symboles.o
-	gcc y.tab.c lex.yy.c tab_symboles.o -ll -o $@ 
+cible: y.tab.c lex.yy.c tab_symboles.o tab_ic.o
+	gcc y.tab.c lex.yy.c tab_symboles.o tab_ic.o -ll -o $@ 
 
 y.tab.o: y.tab.c  lex.yy.o
 	gcc $(CFLAGS) y.tab.c -o $@
@@ -16,6 +16,9 @@ lex.yy.o: lex.yy.c
 
 tab_symboles.o: tab_symboles.c tab_symboles.h 
 	gcc $(CFLAGS) tab_symboles.c -o $@
+
+tab_ic.o: tab_ic.c tab_ic.h
+	gcc $(CFLAGS) tab_ic.c -o $@
 
 lex.yy.c: analyzer_lex.lex
 	flex analyzer_lex.lex 
