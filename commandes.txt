@@ -2,7 +2,6 @@
 cat t.c | ./cible.c
 
 // RAF :
-  - commentaires
-  - printf
   - if, while
   - traitement d'erreur
+  - function

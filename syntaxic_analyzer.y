@@ -218,13 +218,12 @@ int yyerror(char *s) {
 
 void remplacerMarqueursTIC(FILE* fileAsm) {
 	char* line = NULL;
-	char* ptr = NULL;
 	char possibleMarqueur[strlen(MARQUEUR_TIC)];
 	char c;
 	int lineNum = 1;
 	int read;
 	size_t len;
-	char oneword[WORD_CAPACITY];
+	char instruction[WORD_CAPACITY];
 	int arg1;
 
 	FILE* fp2 = fopen("o2.asm", "w");
@@ -232,23 +231,24 @@ void remplacerMarqueursTIC(FILE* fileAsm) {
 	
 	while((read = getline(&line, &len, fileAsm)) != -1) {
 		printf("%d : %s", lineNum, line);
-		ptr = line;
 		// read each word of line
-		do {
-	      	c = sscanf(ptr,"%s %d %s",oneword, &arg1, possibleMarqueur);   //got one word from the file 
-	      	if (!strcmp(possibleMarqueur, MARQUEUR_TIC)) {
-	      		printf("Yahooo on line %d, to replace by %d\n", lineNum, tic_get_dest(lineNum));
-	      	}
-		 	ptr = strstr(ptr, oneword);     // Find where the current word starts.
-    		ptr += strlen(oneword);         // Skip past the current word.
+      	c = sscanf(line,"%s %d %s",instruction, &arg1, possibleMarqueur);   // parse line to 3 parts 
+      	if (!strcmp(possibleMarqueur, MARQUEUR_TIC)) {
+      		// Marqueur trouve' !
+      		// XXX: cette technique suppose une telle format de l'instruction : INSTRUCTION NUMBER MARQUEUR 
+      		printf("Yahooo on line %d, to replace by %d\n", lineNum, tic_get_dest(lineNum));
 
-    		// erase possibleMarqueur
-    		strcpy(possibleMarqueur, "000");
-	   } while (c == 0 && c != EOF);                  // repeat until EOF        
+      		fprintf(fp2, "%s %d %d\n", instruction, arg1, tic_get_dest(lineNum));
+      	} else {
+      		// Sinon, juste copie toute la ligne
+      		fprintf(fp2, "%s", line);
+      	}
+
+		// erase possibleMarqueur
+		strcpy(possibleMarqueur, "000");   
 		lineNum++;
 	}
 
-	//fclose(fp1);
 	fclose(fp2);
 	if (line) {
       free(line);
@@ -263,7 +263,7 @@ int main(void) {
   tic_init();
   
   // open file on mode readwrite
-  fp = fopen("o.asm","r+");
+  fp = fopen("o.asm","w+");
   fprintf(fp, "AFC %d 0\n", ts_addr(NOM_VAR_ZERO));
   ligneAsmCourant++;
   // parser
