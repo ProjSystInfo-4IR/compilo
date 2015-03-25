@@ -28,3 +28,6 @@ run:
 
 test:
 	test_files/run-all-tests.sh
+
+testTabTIC: 
+	gcc -D_TEST_TAB_TIC tab_instruction_controle.c -o ./tab_instruction_controle_test.o -Wall

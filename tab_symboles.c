@@ -30,7 +30,6 @@ void ts_init() {
   memset(table_symboles, 0 , TAILLE*sizeof(struct ts_parametres)) ; 
   ts_ajouter(NOM_VAR_ZERO, 1, 1);
   printf("# Initialisation du tableau de symboles\n");
-  printf("AFC %d 0\n", ts_addr(NOM_VAR_ZERO));
 }
 
 

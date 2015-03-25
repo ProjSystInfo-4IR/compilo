@@ -40,6 +40,8 @@ main       { return tMAIN  ; }
 const      { return tCONST ; }
 int        { return tINT   ; }
 printf     { return tECHO  ; }
+if         { return tIF	   ; }
+else       { return tELSE  ; }
 \+         { return tPLUS  ; } 
 \-         { return tMOINS ; } 
 \*         { return tFOIS  ; } 

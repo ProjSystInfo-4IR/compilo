@@ -9,6 +9,7 @@
 int flagConst ;
 int nbVarTmpCourant = 0;
 char nomVarTmpCourant[NB_VAR_TEMPORAIRE_MAX];
+FILE* fp ;
 
 %}
 
@@ -17,7 +18,7 @@ char nomVarTmpCourant[NB_VAR_TEMPORAIRE_MAX];
 %token  tPARO tPARF tACCO tACCF
 %token  tINT tCONST  
 %token  tSPACE tVIRGULE tFININSTRUCTION tDEUXPOINTS
-%token  tECHO tMAIN
+%token  tECHO tMAIN tIF tELSE
 %error-verbose
 
 %token <chaine> VAR
@@ -57,7 +58,7 @@ VariablesDeclarations:  VAR tFININSTRUCTION {if (ts_addr($1) == -1) {
 		  									  	printf("ERREUR : Symbole déjà déclarée\n"); 
 		  									  }}
 					  | VAR tEGAL NOMBRE tFININSTRUCTION {if (ts_addr($1) == -1) { 
-					  										ts_ajouter($1, flagConst, 1);  printf("AFC %d %d\n", ts_addr($1), $3);
+					  										ts_ajouter($1, flagConst, 1);  fprintf(fp, "AFC %d %d\n", ts_addr($1), $3);
 					  									  } else { 
 					  									  	printf("ERREUR : Symbole déjà déclarée\n"); 
 					  									  }}
@@ -67,7 +68,7 @@ VariablesDeclarations:  VAR tFININSTRUCTION {if (ts_addr($1) == -1) {
 					  									  	printf("ERREUR : Symbole déjà déclarée\n"); 
 					  									  }}
 					  | VAR tEGAL NOMBRE tVIRGULE VariablesDeclarations {if (ts_addr($1) == -1) { 
-					  														ts_ajouter($1, flagConst, 1); printf("AFC %d %d\n", ts_addr($1), $3);
+					  														ts_ajouter($1, flagConst, 1); fprintf(fp, "AFC %d %d\n", ts_addr($1), $3);
 					  									  				} else { 
 					  									  					printf("ERREUR : Symbole déjà déclarée\n"); 
 					  									  				}}
@@ -78,24 +79,28 @@ Instructions: Instruction  Instructions
 			|
 			;
 
-Instruction:		Affectation tFININSTRUCTION
-			|  tECHO tPARO VAR tPARF tFININSTRUCTION    {
-													if (ts_addr($3) == -1) { 
-														printf("Erreur : variable non déclarée\n");
-													} else {
-														if (!est_initialise($3)) {
-															printf("# Warning : variable non initialisée\n");
-														}
-														printf("PRI %d\n", ts_addr($3));
-													}
-														}
+Instruction:  Affichage tFININSTRUCTION
+			| Affectation tFININSTRUCTION
 			|  error  tFININSTRUCTION	{ yyerrok; }
+			;
+
+Affichage : tECHO tPARO VAR tPARF     
+			{
+				if (ts_addr($3) == -1) { 
+					printf("Erreur : variable non déclarée\n");
+				} else {
+					if (!est_initialise($3)) {
+						printf("# Warning : variable non initialisée\n");
+					}
+					fprintf(fp, "PRI %d\n", ts_addr($3));
+				}
+			}
 			;
 
 Affectation:		VAR tEGAL Expression		{ if(ts_addr($1) != -1) { 
 								if (!est_constant($1) || ((est_constant($1)) && (!est_initialise($1)))) {
 									ts_affect($1); 
-									printf("COP %d %d \n", ts_addr($1), $3)  ;
+									fprintf(fp, "COP %d %d \n", ts_addr($1), $3)  ;
 									ts_depiler();
 							        }
 								else {
@@ -106,6 +111,7 @@ Affectation:		VAR tEGAL Expression		{ if(ts_addr($1) != -1) {
 								printf(" \n# Variable non définie \n")  ;
 							  }							
                                                         }
+                    ;
 
 
 Expression:
@@ -113,7 +119,7 @@ Expression:
 								  sprintf(nomVarTmpCourant, "var_tmp%d", nbVarTmpCourant);
 								  ts_ajouter(nomVarTmpCourant, 1, 0); 
 								  nbVarTmpCourant++;
-								  printf("AFC %d %d\n", ts_addr(nomVarTmpCourant), NOMBRE); 
+								  fprintf(fp, "AFC %d %d\n", ts_addr(nomVarTmpCourant), NOMBRE); 
 								  $$=ts_addr(nomVarTmpCourant) ; 
 								}
             | VAR               {if (ts_addr($1) == -1) {
@@ -125,36 +131,36 @@ Expression:
                                  	sprintf(nomVarTmpCourant, "var_tmp%d", nbVarTmpCourant);
 								    ts_ajouter(nomVarTmpCourant, 1, 0); 
 								    nbVarTmpCourant++;
-								    printf("COP %d %d\n", ts_addr(nomVarTmpCourant), ts_addr($1)); 
+								    fprintf(fp, "COP %d %d\n", ts_addr(nomVarTmpCourant), ts_addr($1)); 
 							     	$$=ts_addr(nomVarTmpCourant) ;
                              	}}
 			| tPARO Expression tPARF	{ $$=$2 ; } 
 			| Expression tPLUS Expression 	{ 
-												printf("ADD %d %d %d\n", $1, $1, $3) ; 
+												fprintf(fp, "ADD %d %d %d\n", $1, $1, $3) ; 
 											  	ts_depiler(); 
 											  	nbVarTmpCourant--; 
 											  	$$ = $1;
 											}  
 			| Expression tMOINS Expression	{ 
-												printf("SUB %d %d %d\n", $1, $1, $3) ; 
+												fprintf(fp, "SUB %d %d %d\n", $1, $1, $3) ; 
 											  	ts_depiler(); 
 											  	nbVarTmpCourant--; 
 											  	$$ = $1;
 										     } 
 			| Expression tFOIS Expression	{ 
-												printf("MUL %d %d %d\n", $1, $1, $3) ; 
+												fprintf(fp, "MUL %d %d %d\n", $1, $1, $3) ; 
 											  	ts_depiler(); 
 											  	nbVarTmpCourant--; 
 											  	$$ = $1;
 											}
 			| Expression tDIVISE Expression	{ 
-												printf("DIV %d %d %d\n", $1, $1, $3) ; 
+												fprintf(fp, "DIV %d %d %d\n", $1, $1, $3) ; 
 											  	ts_depiler(); 
 											  	nbVarTmpCourant--; 
 											  	$$ = $1;
 											 }
 			| tMOINS Expression		{ printf("# Faire la négation d'une expression\n");
-									  printf("SOU %d %d %d\n", $2, ts_addr(NOM_VAR_ZERO), $2);
+									  fprintf(fp, "SOU %d %d %d\n", $2, ts_addr(NOM_VAR_ZERO), $2);
 									  $$ = $2; 
 									}   %prec tFOIS
 			; 
@@ -175,11 +181,14 @@ int main(void) {
   // initialiser tab symboles 
   ts_init() ; 
 
+  fp = fopen("o.asm","w");
+  fprintf(fp, "AFC %d 0\n", ts_addr(NOM_VAR_ZERO));
   // parser
   yyparse();
 
  // affichage table des symboles 
   ts_print() ; 
 
+  fclose(fp);
   return 0;
 }
