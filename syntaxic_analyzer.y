@@ -2,9 +2,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-	#include <string.h>
+#include <string.h>
+#include <errno.h>  // error code
+#include <unistd.h> // getopt
 #include "tab_symboles.h"
 #include "tab_ic.h"
+
+extern FILE * yyin;
 
 #define NB_VAR_TEMPORAIRE_MAX 50
 // Nb maximum de characteres dans une ligne de code assembleur que le compilateur peut générer
@@ -255,32 +259,61 @@ void remplacerMarqueursTIC(FILE* fileAsm) {
   	}
 }
 
-int main(void) {
-  // initialiser tab symboles 
-  ts_init() ; 
+int main(int argc, char** argv) { int opt;
 
-  // initaliser tab IC
-  tic_init();
+	char* outputFilename = "o.asm";
+	FILE* inputFile;
+	while ((opt = getopt(argc, argv, "vo:")) != -1) {
+		switch (opt) {
+			case 'v' : 
+				// enables verbose mode
+				break;
+			case 'o' : 
+				// output target, default to o.asm
+				outputFilename = optarg;
+				break;
+		}
+	}
+
+	if (optind == argc) {
+		printf("No input file specified\n");
+		return EXIT_FAILURE;
+	}
+	if ((inputFile = fopen(argv[optind], "r")) == NULL) {
+		printf("Cannot open input file %s\n", argv[optind]);
+		return EXIT_FAILURE;
+	}
+	yyin = inputFile;
+	
+	// open file on mode read write
+  	fp = fopen(outputFilename,"w+");
+
+	// initialiser tab symboles 
+	ts_init();
+	// cette ligne est couple avec le tab symboles
+  	fprintf(fp, "AFC %d 0\n", ts_addr(NOM_VAR_ZERO));
+  	ligneAsmCourant++;
+
+  	// initaliser tab IC
+  	tic_init();
+  	
+  	// parser
+  	yyparse();
+
+ 	// affichage table des symboles 
+  	ts_print() ;
+
+  	printf("Nb var temporaires : %d\n", nbVarTmpCourant);
+  	printf("Nb lignes asm : %d\n", ligneAsmCourant);
   
-  // open file on mode readwrite
-  fp = fopen("o.asm","w+");
-  fprintf(fp, "AFC %d 0\n", ts_addr(NOM_VAR_ZERO));
-  ligneAsmCourant++;
-  // parser
-  yyparse();
+  	// prepare fp to be read by remplacerMarqueursTIC
+  	rewind(fp);
+  	remplacerMarqueursTIC(fp);
 
- // affichage table des symboles 
-  ts_print() ; 
-  printf("Nb var temporaires : %d\n", nbVarTmpCourant);
-  printf("Nb lignes asm : %d\n", ligneAsmCourant);
-
-  
-  // prepare fp to be read by remplacerMarqueursTIC
-  rewind(fp);
-  remplacerMarqueursTIC(fp);
-
-  fclose(fp);
-  // affichage table TIC
-  tic_print();
-  return 0;
+  	fclose(fp);
+  	
+  	// affichage table TIC
+  	tic_print();
+  	
+  	return EXIT_SUCCESS;
 }
