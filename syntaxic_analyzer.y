@@ -100,17 +100,12 @@ Instruction:  Affichage tFININSTRUCTION
 			|  error  tFININSTRUCTION	{ yyerrok; }
 			;
 
-Affichage : tECHO tPARO VAR tPARF     
+Affichage : tECHO tPARO Expression tPARF     
 			{
-				if (ts_addr($3) == -1) { 
-					printf("Erreur : variable non déclarée\n");
-				} else {
-					if (!est_initialise($3)) {
-						printf("# Warning : variable non initialisée\n");
-					}
-					fprintf(fp, "PRI %d\n", ts_addr($3));
-					ligneAsmCourant++;
-				}
+				fprintf(fp, "PRI %d\n", $3);
+				ligneAsmCourant++;
+				ts_depiler();
+				nbVarTmpCourant--;
 			}
 			;
 

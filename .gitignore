@@ -1,6 +1,8 @@
 build
 cible
 
+*.o
+
 # Lex 
 lex.yy.c
 
