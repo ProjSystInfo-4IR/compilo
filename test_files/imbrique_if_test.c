@@ -4,8 +4,15 @@ main() {
   {
     if (1) {
       printf(a);
+      if (2) {
+      	printf(a);
+      }
     }
-    printf(1);
+
+    if (1) {
+    	printf(1);
+	}
   }
   printf(12);
+  if (a) {}
 }

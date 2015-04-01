@@ -200,13 +200,23 @@ IfBloc: tIF tPARO Expression
 		  	ligneAsmCourant++;
 
 	    }
-	    tPARF tACCO Instructions tACCF 
-	    {
-	    	tic_set_dest(ligneAsmCourant);
-	    	//profondeurBloc--;
-	    	printf ("Fin du truc if \n") ;
-		}
+	    tPARF tACCO Instructions SuiteIf
 	    ; 
+
+SuiteIf : tACCF 
+	    {
+	    	tic_set_dest(ligneAsmCourant+1);
+	    	tic_ajouter_s(ligneAsmCourant);
+	    	fprintf(fp, "JMP %s\n", MARQUEUR_TIC);
+	    	ligneAsmCourant++;
+		} tELSE tACCO Instructions tACCF
+		{
+			tic_set_dest(ligneAsmCourant);
+		}
+		| tACCF
+		{
+			tic_set_dest(ligneAsmCourant);
+		};
 
 Fin:			tACCF		{ printf ("Fin du programme \n") ; }  
 
@@ -241,10 +251,18 @@ void remplacerMarqueursTIC(FILE* fileAsm) {
 
       		fprintf(fp2, "%s %d %d\n", instruction, arg1, tic_get_dest(lineNum));
       	} else {
-      		// Sinon, juste copie toute la ligne
-      		fprintf(fp2, "%s", line);
-      	}
+	      	c = sscanf(line,"%s %s",instruction, possibleMarqueur);
+	      	if (!strcmp(possibleMarqueur, MARQUEUR_TIC)) {
+	      		// Marqueur trouve' !
+	      		// XXX: cette technique suppose une telle format de l'instruction : INSTRUCTION MARQUEUR 
+	      		printf("Yahooo on line %d, to replace by %d\n", lineNum, tic_get_dest(lineNum));
 
+	      		fprintf(fp2, "%s %d\n", instruction, tic_get_dest(lineNum));
+	      	} else {
+	      		// Sinon, juste copie toute la ligne
+	      		fprintf(fp2, "%s", line);
+	      	}
+      	}
 		// erase possibleMarqueur
 		strcpy(possibleMarqueur, "000");   
 		lineNum++;

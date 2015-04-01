@@ -2,6 +2,9 @@
 cat t.c | ./cible.c
 
 // RAF :
-  - if, while
+  - interpreteur
+  - while
   - traitement d'erreur
   - function
+  - pointeur
+  - chaine de caractere
