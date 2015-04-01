@@ -16,6 +16,8 @@ void tic_affect(char * nom);
 
 /* SETTERS */
 void tic_set_source(int source);
+
+// Assigner dest a la derniere valeur qui n'est pas resolue
 void tic_set_dest(int dest);
 
 /*  GETTERS  */ 

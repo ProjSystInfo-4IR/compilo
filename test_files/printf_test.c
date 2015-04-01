@@ -4,5 +4,5 @@ main() {
   int c;
   printf(a);
   printf(b);
-  printf(c);
+  printf(a+b*2+50);
 }

@@ -82,7 +82,11 @@ void tic_set_dest(int dest) {
     printf("TIC : Pas d'element pour affecter dest %d\n", dest);
     return;
   }
-  pile[index_tab_tic-1].addr_dst = dest;
+  int index_to_assign = index_tab_tic-1;
+  while (pile[index_to_assign].addr_dst != -1) {
+    index_to_assign--;
+  }
+  pile[index_to_assign].addr_dst = dest;
 }
 
 /* GETTERS */

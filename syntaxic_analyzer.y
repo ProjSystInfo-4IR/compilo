@@ -131,6 +131,7 @@ Affectation:		VAR tEGAL Expression		{ if(ts_addr($1) != -1) {
 Expression:
 			NOMBRE				{ 
 								  sprintf(nomVarTmpCourant, "var_tmp%d", nbVarTmpCourant);
+								  printf("# Stocker nombre %d dans var temporaire %s\n", $1, nomVarTmpCourant);
 								  ts_ajouter(nomVarTmpCourant, 1, 0); 
 								  nbVarTmpCourant++;
 								  fprintf(fp, "AFC %d %d\n", ts_addr(nomVarTmpCourant), $1);
@@ -142,8 +143,8 @@ Expression:
 								} else if (est_initialise($1) == 0) {
 									printf("Erreur : variable non initialisée\n");	
 								} else { 
-                                 	printf("# Stocker var dans var temporaire\n");
                                  	sprintf(nomVarTmpCourant, "var_tmp%d", nbVarTmpCourant);
+                                 	printf("# Stocker var %s dans var temporaire %s\n", $1, nomVarTmpCourant);
 								    ts_ajouter(nomVarTmpCourant, 1, 0); 
 								    nbVarTmpCourant++;
 								    fprintf(fp, "COP %d %d\n", ts_addr(nomVarTmpCourant), ts_addr($1)); 
@@ -202,6 +203,7 @@ IfBloc: tIF tPARO Expression
 	    tPARF tACCO Instructions tACCF 
 	    {
 	    	tic_set_dest(ligneAsmCourant);
+	    	//profondeurBloc--;
 	    	printf ("Fin du truc if \n") ;
 		}
 	    ; 
@@ -229,7 +231,7 @@ void remplacerMarqueursTIC(FILE* fileAsm) {
 	// read all line
 	
 	while((read = getline(&line, &len, fileAsm)) != -1) {
-		printf("%d : %s", lineNum, line);
+		printf("%2d : %s", lineNum, line);
 		// read each word of line
       	c = sscanf(line,"%s %d %s",instruction, &arg1, possibleMarqueur);   // parse line to 3 parts 
       	if (!strcmp(possibleMarqueur, MARQUEUR_TIC)) {
