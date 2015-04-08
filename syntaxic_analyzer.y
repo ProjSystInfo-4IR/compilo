@@ -29,7 +29,7 @@ FILE* fp ;
 %token  tPARO tPARF tACCO tACCF
 %token  tINT tCONST  
 %token  tSPACE tVIRGULE tFININSTRUCTION tDEUXPOINTS
-%token  tECHO tMAIN tIF tELSE
+%token  tECHO tMAIN tIF tELSE tWHILE
 %error-verbose
 
 %token <chaine> VAR
@@ -92,6 +92,7 @@ VariablesDeclarations:  VAR tFININSTRUCTION {if (ts_addr($1) == -1) {
 
 Instructions: Instruction  Instructions 
 			| IfBloc Instructions
+			| WhileBloc Instructions
 			|
 			;
 
@@ -220,6 +221,30 @@ SuiteIf : tACCF
 
 Fin:			tACCF		{ printf ("Fin du programme \n") ; }  
 
+WhileBloc : tWHILE tPARO
+		{
+			tic_ajouter_d(ligneAsmCourant);
+		}
+			 Expression
+        {
+
+        	// empiler dans la table tic
+		  	tic_ajouter_s(ligneAsmCourant);
+
+        	fprintf(fp, "JMF %d %s\n", ts_addr(nomVarTmpCourant), MARQUEUR_TIC);
+		  	ligneAsmCourant++;	
+
+		  	// depiler la var tmp cree par Expression
+		  	ts_depiler();
+			nbVarTmpCourant--;
+        }
+	   tPARF tACCO Instructions tACCF
+	   {
+	   		tic_set_source(ligneAsmCourant);
+	   		fprintf(fp, "JMP %s\n", MARQUEUR_TIC);
+	   		ligneAsmCourant++;
+	   		tic_set_dest(ligneAsmCourant);
+	   }
 
 %%
 

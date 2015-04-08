@@ -74,7 +74,11 @@ void tic_set_source(int source) {
     printf("TIC : Pas d'element pour affecter source %d\n", source);
     return;
   }
-  pile[index_tab_tic-1].addr_src = source;
+  int index_to_assign = index_tab_tic - 1;
+  while (pile[index_to_assign].addr_src != -1) {
+    index_to_assign--;
+  }
+  pile[index_to_assign].addr_src = source;
 }
 
 void tic_set_dest(int dest) {

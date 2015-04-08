@@ -42,6 +42,7 @@ int        { return tINT   ; }
 printf     { return tECHO  ; }
 if         { return tIF	   ; }
 else       { return tELSE  ; }
+while      { return tWHILE ; }
 \+         { return tPLUS  ; } 
 \-         { return tMOINS ; } 
 \*         { return tFOIS  ; } 
