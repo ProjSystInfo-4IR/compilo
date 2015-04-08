@@ -7,6 +7,7 @@
 #include <unistd.h> // getopt
 #include "tab_symboles.h"
 #include "tab_ic.h"
+#include "dumb-logger/logger.h"
 
 extern FILE * yyin;
 
@@ -66,26 +67,26 @@ Declaration: tINT  {flagConst = 0;} VariablesDeclarations
 VariablesDeclarations:  VAR tFININSTRUCTION {if (ts_addr($1) == -1) { 
 		  										ts_ajouter($1, flagConst, 0);
 		  									  } else { 
-		  									  	printf("ERREUR : Symbole déjà déclarée\n"); 
+		  									  	logger_error("Symbole déjà déclarée\n"); 
 		  									  }}
 					  | VAR tEGAL NOMBRE tFININSTRUCTION {if (ts_addr($1) == -1) { 
 					  										ts_ajouter($1, flagConst, 1);  
 					  										fprintf(fp, "AFC %d %d\n", ts_addr($1), $3);
 					  										ligneAsmCourant++;
 					  									  } else { 
-					  									  	printf("ERREUR : Symbole déjà déclarée\n"); 
+					  									  	logger_error("Symbole déjà déclarée\n"); 
 					  									  }}
 					  | VAR tVIRGULE VariablesDeclarations {if (ts_addr($1) == -1) { 
 					  										ts_ajouter($1, flagConst, 0);
 					  									  } else { 
-					  									  	printf("ERREUR : Symbole déjà déclarée\n"); 
+					  									  	logger_error("Symbole déjà déclarée\n"); 
 					  									  }}
 					  | VAR tEGAL NOMBRE tVIRGULE VariablesDeclarations {if (ts_addr($1) == -1) { 
 					  														ts_ajouter($1, flagConst, 1); 
 					  														fprintf(fp, "AFC %d %d\n", ts_addr($1), $3);
 					  														ligneAsmCourant++;
 					  									  				} else { 
-					  									  					printf("ERREUR : Symbole déjà déclarée\n"); 
+					  									  					logger_error("Symbole déjà déclarée\n"); 
 					  									  				}}
 					  ;
 
@@ -119,11 +120,11 @@ Affectation:		VAR tEGAL Expression		{ if(ts_addr($1) != -1) {
 									nbVarTmpCourant--;
 							        }
 								else {
-									printf(" \n# Constante initialisée détectée, modification impossible \n ")  ; 	
+									logger_error("Constante initialisée détectée, modification impossible \n ")  ; 	
 								}
 							  }
 							  else {
-								printf(" \n# Variable non définie \n")  ;
+								logger_error("Variable non définie \n")  ;
 							  }							
                                                         }
                     ;
@@ -132,7 +133,7 @@ Affectation:		VAR tEGAL Expression		{ if(ts_addr($1) != -1) {
 Expression:
 			NOMBRE				{ 
 								  sprintf(nomVarTmpCourant, "var_tmp%d", nbVarTmpCourant);
-								  printf("# Stocker nombre %d dans var temporaire %s\n", $1, nomVarTmpCourant);
+								  logger_info("# Stocker nombre %d dans var temporaire %s\n", $1, nomVarTmpCourant);
 								  ts_ajouter(nomVarTmpCourant, 1, 0); 
 								  nbVarTmpCourant++;
 								  fprintf(fp, "AFC %d %d\n", ts_addr(nomVarTmpCourant), $1);
@@ -140,12 +141,12 @@ Expression:
 								  $$=ts_addr(nomVarTmpCourant) ; 
 								}
             | VAR               {if (ts_addr($1) == -1) {
-									printf("Erreur : variable non déclarée\n");		
+									logger_error("Variable non déclarée\n");		
 								} else if (est_initialise($1) == 0) {
-									printf("Erreur : variable non initialisée\n");	
+									logger_error("Variable non initialisée\n");	
 								} else { 
                                  	sprintf(nomVarTmpCourant, "var_tmp%d", nbVarTmpCourant);
-                                 	printf("# Stocker var %s dans var temporaire %s\n", $1, nomVarTmpCourant);
+                                 	logger_info("Stocker var %s dans var temporaire %s\n", $1, nomVarTmpCourant);
 								    ts_ajouter(nomVarTmpCourant, 1, 0); 
 								    nbVarTmpCourant++;
 								    fprintf(fp, "COP %d %d\n", ts_addr(nomVarTmpCourant), ts_addr($1)); 
@@ -181,7 +182,7 @@ Expression:
 											  	nbVarTmpCourant--; 
 											  	$$ = $1;
 											 }
-			| tMOINS Expression		{ printf("# Faire la négation d'une expression\n");
+			| tMOINS Expression		{ logger_info("# Faire la négation d'une expression\n");
 									  fprintf(fp, "SOU %d %d %d\n", $2, ts_addr(NOM_VAR_ZERO), $2);
 									  ligneAsmCourant++;
 									  $$ = $2; 
@@ -219,7 +220,7 @@ SuiteIf : tACCF
 			tic_set_dest(ligneAsmCourant);
 		};
 
-Fin:			tACCF		{ printf ("Fin du programme \n") ; }  
+Fin:			tACCF		{ logger_info ("Fin du programme \n") ; }  
 
 WhileBloc : tWHILE tPARO
 		{
@@ -249,7 +250,7 @@ WhileBloc : tWHILE tPARO
 %%
 
 int yyerror(char *s) {
-  printf("%s\n",s);
+  logger_error("%s\n",s);
 }
 
 void remplacerMarqueursTIC(FILE* fileAsm) {
@@ -266,13 +267,13 @@ void remplacerMarqueursTIC(FILE* fileAsm) {
 	// read all line
 	
 	while((read = getline(&line, &len, fileAsm)) != -1) {
-		printf("%2d : %s", lineNum, line);
+		logger_info("%2d : %s", lineNum, line);
 		// read each word of line
       	c = sscanf(line,"%s %d %s",instruction, &arg1, possibleMarqueur);   // parse line to 3 parts 
       	if (!strcmp(possibleMarqueur, MARQUEUR_TIC)) {
       		// Marqueur trouve' !
       		// XXX: cette technique suppose une telle format de l'instruction : INSTRUCTION NUMBER MARQUEUR 
-      		printf("Yahooo on line %d, to replace by %d\n", lineNum, tic_get_dest(lineNum));
+      		logger_info("Marker found on line %d, to be replaced by %d\n", lineNum, tic_get_dest(lineNum));
 
       		fprintf(fp2, "%s %d %d\n", instruction, arg1, tic_get_dest(lineNum));
       	} else {
@@ -280,7 +281,7 @@ void remplacerMarqueursTIC(FILE* fileAsm) {
 	      	if (!strcmp(possibleMarqueur, MARQUEUR_TIC)) {
 	      		// Marqueur trouve' !
 	      		// XXX: cette technique suppose une telle format de l'instruction : INSTRUCTION MARQUEUR 
-	      		printf("Yahooo on line %d, to replace by %d\n", lineNum, tic_get_dest(lineNum));
+	      		logger_info("Marker found on line %d, to be replaced by %d\n", lineNum, tic_get_dest(lineNum));
 
 	      		fprintf(fp2, "%s %d\n", instruction, tic_get_dest(lineNum));
 	      	} else {
@@ -307,6 +308,7 @@ int main(int argc, char** argv) { int opt;
 		switch (opt) {
 			case 'v' : 
 				// enables verbose mode
+				logger_set_level(LOGGER_VERBOSE);
 				break;
 			case 'o' : 
 				// output target, default to o.asm
@@ -316,11 +318,11 @@ int main(int argc, char** argv) { int opt;
 	}
 
 	if (optind == argc) {
-		printf("No input file specified\n");
+		logger_error("No input file specified\n");
 		return EXIT_FAILURE;
 	}
 	if ((inputFile = fopen(argv[optind], "r")) == NULL) {
-		printf("Cannot open input file %s\n", argv[optind]);
+		logger_error("Cannot open input file %s\n", argv[optind]);
 		return EXIT_FAILURE;
 	}
 	yyin = inputFile;
@@ -343,8 +345,8 @@ int main(int argc, char** argv) { int opt;
  	// affichage table des symboles 
   	ts_print() ;
 
-  	printf("Nb var temporaires : %d\n", nbVarTmpCourant);
-  	printf("Nb lignes asm : %d\n", ligneAsmCourant);
+  	logger_info("Nb var temporaires : %d\n", nbVarTmpCourant);
+  	logger_info("Nb lignes asm : %d\n", ligneAsmCourant);
   
   	// prepare fp to be read by remplacerMarqueursTIC
   	rewind(fp);
@@ -354,6 +356,8 @@ int main(int argc, char** argv) { int opt;
   	
   	// affichage table TIC
   	tic_print();
+
+  	printf("Compilation finished.\n");
   	
   	return EXIT_SUCCESS;
 }

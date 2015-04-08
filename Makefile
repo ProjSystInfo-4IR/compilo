@@ -6,14 +6,17 @@ CFLAGS=-Wall -Werror -c
 
 all: $(TARGETS)
 
-cible: y.tab.c lex.yy.c tab_symboles.o tab_ic.o
-	gcc y.tab.c lex.yy.c tab_symboles.o tab_ic.o -ll -o $@ 
+cible: y.tab.c lex.yy.c tab_symboles.o tab_ic.o logger.o
+	gcc y.tab.c lex.yy.c tab_symboles.o tab_ic.o logger.o -ll -o $@ 
 
 y.tab.o: y.tab.c  lex.yy.o
 	gcc $(CFLAGS) y.tab.c -o $@
 
 lex.yy.o: lex.yy.c
 	gcc $(CFLAGS) lex.yy.c -o $@
+
+logger.o: dumb-logger/logger.c dumb-logger/logger.h
+	gcc $(CFLAGS) dumb-logger/logger.c -o $@
 
 tab_symboles.o: tab_symboles.c tab_symboles.h 
 	gcc $(CFLAGS) tab_symboles.c -o $@

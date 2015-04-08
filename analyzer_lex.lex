@@ -4,6 +4,7 @@
 /* C code to be copied verbatim */
 #include <stdio.h>
 #include "y.tab.h"
+#include "dumb-logger/logger.h"
 %}
 
 SPACE  [\t ]+
@@ -59,7 +60,7 @@ while      { return tWHILE ; }
 {DIGITS} { /* [0-9]+ matches a string of one or more digits */ yylval.nombre=atoi(yytext) ; return NOMBRE ;}
 {STRING} { return TXT ; }
 
-.|\n    { printf("[LEX] : Non reconnu\n"); }
+.|\n    { logger_error("[LEX] : Non reconnu\n"); }
  
 %%
 

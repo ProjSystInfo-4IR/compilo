@@ -3,6 +3,7 @@
 #include <math.h>
 #include <string.h> 
 #include "tab_symboles.h"
+#include "dumb-logger/logger.h"
 #define TAILLE 1024
 #define MIN_TAILLE 1
 
@@ -29,7 +30,7 @@ void ts_init() {
   index_tab = 0 ; 
   memset(table_symboles, 0 , TAILLE*sizeof(struct ts_parametres)) ; 
   ts_ajouter(NOM_VAR_ZERO, 1, 1);
-  printf("# Initialisation du tableau de symboles\n");
+  logger_info("# Initialisation du tableau de symboles\n");
 }
 
 
@@ -60,7 +61,7 @@ void ts_ajouter(char * nom, int est_constant, int est_initialise) {
 // supprimer variable en mémoire (pas de désallocation)
 void ts_depiler() {
   if (index_tab == MIN_TAILLE) {
-    printf("Erreur : Dépiler impossible\n");
+    logger_error("Dépiler impossible\n");
     return;
   }
   index_tab-- ;   
@@ -82,13 +83,13 @@ int est_initialise(char * nom) {
 
 void ts_print() {
   int i ; 
-  printf("\nAFFICHAGE TABLE DES SYMBOLES \n") ;
-  printf("    Nom     -    Initialise - Constant - Adresse\n") ;
+  logger_info("\nAFFICHAGE TABLE DES SYMBOLES \n") ;
+  logger_info("    Nom     -    Initialise - Constant - Adresse\n") ;
  
   for(i = 0 ; i < index_tab ; i++){
-    printf("%10s  %10d  %10d  %10d\n", table_symboles[i].nom, table_symboles[i].is_initialized, table_symboles[i].is_constant, table_symboles[i].adrMem) ; 
+    logger_info("%10s  %10d  %10d  %10d\n", table_symboles[i].nom, table_symboles[i].is_initialized, table_symboles[i].is_constant, table_symboles[i].adrMem) ; 
   }
-  printf("\n") ;
+  logger_info("\n") ;
 }
 
 

@@ -3,6 +3,7 @@
 #include <math.h>
 #include <string.h> 
 #include "tab_ic.h"
+#include "dumb-logger/logger.h"
 #define TAILLE 1024
 #define MIN_TAILLE 0
 
@@ -44,7 +45,7 @@ void tic_ajouter_d(int dest) {
 // supprimer variable en mémoire (pas de désallocation)
 void tic_depiler() {
   if (index_tab_tic == MIN_TAILLE) {
-    printf("Erreur : Dépiler impossible\n");
+    logger_error("Dépiler impossible\n");
     return;
   }
   pile[index_tab_tic-1].addr_src = -1;
@@ -55,13 +56,13 @@ void tic_depiler() {
 
 void tic_print() {
   int i ; 
-  printf("\nAFFICHAGE TABLE DES INSTRUCTIONS CONTROLES \n") ;
-  printf("Source - Destination\n") ;
+  logger_info("\nAFFICHAGE TABLE DES INSTRUCTIONS CONTROLES \n") ;
+  logger_info("Source - Destination\n") ;
  
   for(i = 0 ; i < index_tab_tic ; i++){
-    printf("%4d       %4d\n", pile[i].addr_src, pile[i].addr_dst) ; 
+    logger_info("%4d       %4d\n", pile[i].addr_src, pile[i].addr_dst) ; 
   }
-  printf("\n") ;
+  logger_info("\n") ;
 }
 
 
@@ -71,7 +72,7 @@ void tic_print() {
 /*  SETTERS  */  
 void tic_set_source(int source) {
   if (index_tab_tic == 0) {
-    printf("TIC : Pas d'element pour affecter source %d\n", source);
+    logger_error("TIC : Pas d'element pour affecter source %d\n", source);
     return;
   }
   int index_to_assign = index_tab_tic - 1;
@@ -83,7 +84,7 @@ void tic_set_source(int source) {
 
 void tic_set_dest(int dest) {
   if (index_tab_tic == 0) {
-    printf("TIC : Pas d'element pour affecter dest %d\n", dest);
+    logger_error("TIC : Pas d'element pour affecter dest %d\n", dest);
     return;
   }
   int index_to_assign = index_tab_tic-1;
