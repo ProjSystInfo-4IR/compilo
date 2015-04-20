@@ -5,22 +5,25 @@
 #include <math.h>
 #include <string.h>
 #include <errno.h>  // error code
-#include <unistd.h> // getopt
-#include "tab_symboles.h"
-#include "tab_ic.h"
-#include "dumb-logger/logger.h"
+#include <unistd.h> // fonction getopt
 
-#define NB_VAR_TEMPORAIRE_MAX 50
-  // Nb maximum de characteres dans une ligne de code assembleur que le compilateur peut générer
-#define LINE_CAPACITY 100
-#define WORD_CAPACITY 32
+#include "tab_symboles.h" // table des symboles 
+#include "tab_ic.h" // table des instructions 
+#include "tab_fct.h" // table des fonctions
+#include "dumb-logger/logger.h" // gestion des erreurs
+
+#define NB_VAR_TEMPORAIRE_MAX 50  
+#define LINE_CAPACITY 100 // Nb maximum de characteres dans une ligne de code assembleur que le compilateur peut générer
+#define WORD_CAPACITY 32  // attention un nom de fonction ne peut excéder 32 caratères  
 
   extern FILE * yyin;
   int ligneAsmCourant = 1;
   int flagConst ;
   int nbVarTmpCourant = 0;
   char nomVarTmpCourant[NB_VAR_TEMPORAIRE_MAX];
+  char* nom_fonc ; 
   const char* MARQUEUR_TIC = "???";
+  const char* MARQUEUR_FCT = "$$$" ; 
   FILE* fp ;
 
   %}
@@ -50,22 +53,27 @@
 %start Input
 %%
 
-Input:			DeclFonctions MainProg Fonctions ; 
+Input:			DebFonctions MainProg DebFonctions ; 
 
-DeclFonctions:		VAR tPARO tPARF tFININSTRUCTION  { 
-                        // ajouter dans table des fonctions 
-			logger_info ("Fonction %s déclarée \n", $1) ;
-			 } DeclFonctions
-|
-;		
+DebFonctions:           VAR tPARO tPARF { ajout_fct($1) ; nom_fonc = $1 ; } SuiteFct DebFonctions | ; 
 
-MainProg:		tMAIN tPARO tPARF tACCO Operations tACCF{ logger_info ("Fin du main \n") ; }  ; 
+SuiteFct:               DeclFonction | DefFonction ;
 
-Fonctions:		VAR { 
-                        // vérifier si dans table des fonctions
-			} tPARO tPARF tACCO Operations tACCF  { logger_info ("Fonction %s traitée \n", $1) ; } Fonctions
-|
-;
+DeclFonction:		tFININSTRUCTION  { logger_info ("Fonction %s déclarée \n", nom_fonc) ; } ; 
+
+DefFonction:	        tACCO { set_code_decl(nom_fonc) ; set_start(nom_fonc, ligneAsmCourant) ; } 
+Operations tACCF 
+{  
+  fprintf(fp, "POP %s\n", "%eip");	// retour fonction mère 
+  ligneAsmCourant++;
+  logger_info ("Fonction %s définie \n", nom_fonc) ; 
+} ;
+
+MainProg:		tMAIN {ajout_fct("main") ; set_code_decl("main") ; set_start("main", ligneAsmCourant) ;} tPARO tPARF tACCO Operations tACCF {                         
+  fprintf(fp, "LEAVE\n");
+  ligneAsmCourant++;
+  logger_info ("Fin du main à la ligne %d \n", ligneAsmCourant-1) ;
+}  ;
 
 Operations:		Declarations Instructions ;   
 
@@ -120,10 +128,16 @@ Instruction:  Affichage tFININSTRUCTION
 | error  tFININSTRUCTION	{ yyerrok; }
 ;
 
-AppelFonction:	VAR tPARO tPARF tFININSTRUCTION { logger_info ("Fonction %s appelée \n", $1) ; } 
-;
+AppelFonction:	VAR tPARO tPARF tFININSTRUCTION { 
+  fprintf(fp, "PUSH %s\n" , "%eip");
+  ligneAsmCourant++;
+  fprintf(fp, "JMP %s %s\n", MARQUEUR_FCT, $1);
+  ligneAsmCourant++;
+  logger_info ("Fonction %s appelée \n", $1) ;   
+} 
+; 
 
-Affichage : tECHO tPARO Expression tPARF     
+Affichage: tECHO tPARO Expression tPARF     
 {
   fprintf(fp, "PRI %d\n", $3);
   ligneAsmCourant++;
@@ -148,7 +162,7 @@ Affectation:   VAR tEGAL Expression {
   else {
     logger_error("Variable non définie \n")  ;
   }							
- }
+}
 ;
 
 
@@ -274,6 +288,54 @@ int yyerror(char *s) {
   logger_error("%s\n",s);
 }
 
+
+void remplacerMarqueursFCT(FILE* fileAsm, char* finalFilename) {
+  char* line = NULL;
+  char possibleMarqueur[strlen(MARQUEUR_FCT)];
+  char c;
+  int lineNum = 1;
+  int read;
+  size_t len;
+  char instruction[WORD_CAPACITY];
+  char nom_fct[WORD_CAPACITY];
+  int arg1;
+  FILE* fp2 = fopen(finalFilename, "w");
+  
+  logger_info("\n Remplacement des marqueurs FCT  \n") ;	
+  // read all lines	
+  while((read = getline(&line, &len, fileAsm)) != -1) {
+    logger_info("%2d : %s", lineNum, line);
+    // read each word of line
+    c = sscanf(line,"%s %s %s",instruction, possibleMarqueur, nom_fct);   // parse line to 3 parts 
+    if (!strcmp(possibleMarqueur, MARQUEUR_FCT)) {
+      // Marqueur trouvé !
+      // XXX: cette technique suppose une telle format de l'instruction : INSTRUCTION MARQUEUR NOM_FCT 
+      if(get_start(nom_fct) != -1) {
+	logger_info("Marker found on line %d, to be replaced by %d\n", lineNum, get_start(nom_fct));
+	fprintf(fp2, "%s %d %s\n", instruction, get_start(nom_fct), nom_fct);
+      }
+      else {
+	logger_info("Marker found on line %d, but impossible to replace", lineNum);
+	fprintf(fp2, "%s", line);
+      }
+    }
+    else {
+      // Sinon, juste copie toute la ligne
+      fprintf(fp2, "%s", line);
+    }
+
+    // erase possibleMarqueur
+    strcpy(possibleMarqueur, "000");   
+    lineNum++; 
+  }
+  fclose(fp2);
+  if (line) {
+    free(line);
+  }
+
+}
+
+
 void remplacerMarqueursTIC(FILE* fileAsm, char* finalFilename) {
   char* line = NULL;
   char possibleMarqueur[strlen(MARQUEUR_TIC)];
@@ -285,7 +347,7 @@ void remplacerMarqueursTIC(FILE* fileAsm, char* finalFilename) {
   int arg1;
 
   FILE* fp2 = fopen(finalFilename, "w");
-	
+  logger_info("\n Remplacement des marqueurs TIC  \n") ; 	
   // read all lines	
   while((read = getline(&line, &len, fileAsm)) != -1) {
     logger_info("%2d : %s", lineNum, line);
@@ -323,9 +385,12 @@ void remplacerMarqueursTIC(FILE* fileAsm, char* finalFilename) {
   }
 }
 
+
+
 int main(int argc, char** argv) { int opt;
 
   char* outputFilename = "o.asm";
+  char* outputInt1 = "o1.asm";  
   char* outputFinalFilename = "output.asm";
   FILE* inputFile;
   while ((opt = getopt(argc, argv, "vo:")) != -1) {
@@ -361,31 +426,48 @@ int main(int argc, char** argv) { int opt;
   // cette ligne est couple avec le tab symboles
   fprintf(fp, "AFC %d 0\n", ts_addr(NOM_VAR_ZERO));
   ligneAsmCourant++;
+  fprintf(fp, "JMP %s %s\n", MARQUEUR_FCT, "main");
+  ligneAsmCourant++;
 
-  // initaliser tab IC
+
+  // initaliser table des instructions et des tables des fonctions
   tic_init();
-  	
+  tab_fct_init() ; 
+	
   // parser
   yyparse();
+   
+  // prepare fp to be read by remplacerMarqueursTIC
+  rewind(fp);
+  remplacerMarqueursTIC(fp, outputInt1);
+  fclose(fp);
 
+  // open file on mode read append
+  fp = fopen(outputInt1,"a+");
+  rewind(fp);
+  // prepare fp to be read by remplacerMarqueursFCT
+  remplacerMarqueursFCT(fp, outputFinalFilename);
+  fclose(fp);
+        
+  // supprime les fichiers temporaires (o.asm)
+  remove(outputFilename);
+  remove(outputInt1) ; 
+  
+  // A FAIRE
+  // si on a une erreur, le fichier asm final n'est pas bon 
+  // donc à supprimer 
+  // remove(outputFinalFilename);
+ 
   // affichage table des symboles 
   ts_print() ;
 
   logger_info("Nb var temporaires : %d\n", nbVarTmpCourant);
   logger_info("Nb lignes asm : %d\n", ligneAsmCourant);
-  
-  // prepare fp to be read by remplacerMarqueursTIC
-  rewind(fp);
-  remplacerMarqueursTIC(fp, outputFinalFilename);
 
-  fclose(fp);
-        
-  // supprime le fichier temporaire (o.asm)
-  remove(outputFilename);
-  	
-  // affichage table TIC
+  // affichage table des instructions et table des fonctions
   tic_print();
-
+  tab_fct_print() ; 
+ 
   printf("Compilation finished.\n");
   	
   return EXIT_SUCCESS;
