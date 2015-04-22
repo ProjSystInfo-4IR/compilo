@@ -21,7 +21,7 @@
   int flagConst ;
   int nbVarTmpCourant = 0;
   char nomVarTmpCourant[NB_VAR_TEMPORAIRE_MAX];
-  char* nom_fonc ; 
+  char* nom_fonc  ; 
   const char* MARQUEUR_TIC = "???";
   const char* MARQUEUR_FCT = "$$$" ; 
   FILE* fp ;
@@ -53,7 +53,7 @@
 %start Input
 %%
 
-Input:			DebFonctions MainProg DebFonctions ; 
+Input:			Declarations DebFonctions MainProg DebFonctions ; 
 
 DebFonctions:           VAR tPARO tPARF { ajout_fct($1) ; nom_fonc = $1 ; } SuiteFct DebFonctions | ; 
 
@@ -69,7 +69,7 @@ Operations tACCF
   logger_info ("Fonction %s définie \n", nom_fonc) ; 
 } ;
 
-MainProg:		tMAIN {ajout_fct("main") ; set_code_decl("main") ; set_start("main", ligneAsmCourant) ;} tPARO tPARF tACCO Operations tACCF {                         
+MainProg:		tMAIN { nom_fonc = "main" ; ajout_fct("main") ; set_code_decl("main") ; set_start("main", ligneAsmCourant) ;} tPARO tPARF tACCO Operations tACCF {                         
   fprintf(fp, "LEAVE\n");
   ligneAsmCourant++;
   logger_info ("Fin du main à la ligne %d \n", ligneAsmCourant-1) ;
@@ -86,32 +86,32 @@ Declaration: tINT  {flagConst = 0;} VariablesDeclarations
 ;
 
 VariablesDeclarations:  VAR tFININSTRUCTION {
-  if (ts_addr($1) == -1) { 
-    ts_ajouter($1, flagConst, 0);
+  if (ts_addr($1, nom_fonc) == -1) { 
+    ts_ajouter($1, nom_fonc, flagConst, 0);
   } else { 
-    logger_error("Symbole déjà déclarée\n"); 
+    logger_error("fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
   }}
 | VAR tEGAL NOMBRE tFININSTRUCTION {
-  if (ts_addr($1) == -1) { 
-    ts_ajouter($1, flagConst, 1);  
-    fprintf(fp, "AFC %d %d\n", ts_addr($1), $3);
+  if (ts_addr($1, nom_fonc) == -1) { 
+    ts_ajouter($1, nom_fonc, flagConst, 1);  
+    fprintf(fp, "AFC %d %d\n", ts_addr($1, nom_fonc), $3);
     ligneAsmCourant++;
   } else { 
-    logger_error("Symbole déjà déclarée\n"); 
+    logger_error("fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
   }}
 | VAR tVIRGULE VariablesDeclarations {
-  if (ts_addr($1) == -1) { 
-    ts_ajouter($1, flagConst, 0);
+  if (ts_addr($1, nom_fonc) == -1) { 
+    ts_ajouter($1, nom_fonc, flagConst, 0);
   } else { 
-    logger_error("Symbole déjà déclarée\n"); 
+   logger_error("fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
   }}
 | VAR tEGAL NOMBRE tVIRGULE VariablesDeclarations {
-  if (ts_addr($1) == -1) { 
-    ts_ajouter($1, flagConst, 1); 
-    fprintf(fp, "AFC %d %d\n", ts_addr($1), $3);
+  if (ts_addr($1, nom_fonc) == -1) { 
+    ts_ajouter($1, nom_fonc, flagConst, 1); 
+    fprintf(fp, "AFC %d %d\n", ts_addr($1, nom_fonc), $3);
     ligneAsmCourant++;
   } else { 
-    logger_error("Symbole déjà déclarée\n"); 
+  logger_error("fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
   }}
 ;
 
@@ -147,20 +147,20 @@ Affichage: tECHO tPARO Expression tPARF
 ;
 
 Affectation:   VAR tEGAL Expression { 
-  if(ts_addr($1) != -1) { 
-    if (!est_constant($1) || ((est_constant($1)) && (!est_initialise($1)))) {
-      ts_affect($1); 
-      fprintf(fp, "COP %d %d \n", ts_addr($1), $3);
+  if(ts_addr($1, nom_fonc) != -1) { 
+    if (!est_constant($1, nom_fonc) || ((est_constant($1, nom_fonc)) && (!est_initialise($1, nom_fonc)))) {
+      ts_affect($1, nom_fonc); 
+      fprintf(fp, "COP %d %d \n", ts_addr($1, nom_fonc), $3);
       ligneAsmCourant++;
       ts_depiler();
       nbVarTmpCourant--;
     }
     else {
-      logger_error("Constante initialisée détectée, modification impossible \n ")  ; 	
+      logger_error("fonction %s : Constante %s initialisée détectée, modification impossible \n ", nom_fonc, $1)  ; 	
     }
   }
   else {
-    logger_error("Variable non définie \n")  ;
+    logger_error("fonction %s : Variable %s non définie \n", nom_fonc, $1)  ;
   }							
 }
 ;
@@ -170,25 +170,25 @@ Expression:
 NOMBRE                          { 
   sprintf(nomVarTmpCourant, "var_tmp%d", nbVarTmpCourant);
   logger_info("# Stocker nombre %d dans var temporaire %s\n", $1, nomVarTmpCourant);
-  ts_ajouter(nomVarTmpCourant, 1, 0); 
+  ts_ajouter(nomVarTmpCourant, nom_fonc, 1, 0); 
   nbVarTmpCourant++;
-  fprintf(fp, "AFC %d %d\n", ts_addr(nomVarTmpCourant), $1);
+  fprintf(fp, "AFC %d %d\n", ts_addr(nomVarTmpCourant, nom_fonc), $1);
   ligneAsmCourant++;
-  $$=ts_addr(nomVarTmpCourant) ; 
+  $$=ts_addr(nomVarTmpCourant, nom_fonc) ; 
 }
 | VAR                           {
-  if (ts_addr($1) == -1) {
-    logger_error("Variable non déclarée\n");		
-  } else if (est_initialise($1) == 0) {
-    logger_error("Variable non initialisée\n");	
+  if (ts_addr($1, nom_fonc) == -1) {
+   logger_error("fonction %s : Variable %s non déclarée\n", nom_fonc, $1); 		
+  } else if (est_initialise($1, nom_fonc) == 0) {
+   logger_error("fonction %s : Variable %s non initialisée\n", nom_fonc, $1);	
   } else { 
     sprintf(nomVarTmpCourant, "var_tmp%d", nbVarTmpCourant);
     logger_info("Stocker var %s dans var temporaire %s\n", $1, nomVarTmpCourant);
-    ts_ajouter(nomVarTmpCourant, 1, 0); 
+    ts_ajouter(nomVarTmpCourant, nom_fonc, 1, 0); 
     nbVarTmpCourant++;
-    fprintf(fp, "COP %d %d\n", ts_addr(nomVarTmpCourant), ts_addr($1)); 
+    fprintf(fp, "COP %d %d\n", ts_addr(nomVarTmpCourant, nom_fonc), ts_addr($1, nom_fonc)); 
     ligneAsmCourant++;
-    $$=ts_addr(nomVarTmpCourant) ;
+    $$=ts_addr(nomVarTmpCourant, nom_fonc) ;
   }}
 | tPARO Expression tPARF	{ $$=$2 ; } 
 | Expression tPLUS Expression 	{ 
@@ -221,7 +221,7 @@ NOMBRE                          {
 }
 | tMOINS Expression		{ 
   logger_info("# Faire la négation d'une expression\n");
-  fprintf(fp, "SOU %d %d %d\n", $2, ts_addr(NOM_VAR_ZERO), $2);
+  fprintf(fp, "SOU %d %d %d\n", $2, ts_addr(NOM_VAR_ZERO, nom_fonc), $2);
   ligneAsmCourant++;
   $$ = $2; 
 }   %prec tFOIS
@@ -230,7 +230,7 @@ NOMBRE                          {
 
 IfBloc: tIF tPARO Expression 
 { 
-  fprintf(fp, "JMF %d %s\n", ts_addr(nomVarTmpCourant), MARQUEUR_TIC);
+  fprintf(fp, "JMF %d %s\n", ts_addr(nomVarTmpCourant, nom_fonc), MARQUEUR_TIC);
   // depiler la var tmp cree par Expression
   ts_depiler();
   nbVarTmpCourant--;
@@ -267,7 +267,7 @@ Expression
   // empiler dans la table tic
   tic_ajouter_s(ligneAsmCourant);
 
-  fprintf(fp, "JMF %d %s\n", ts_addr(nomVarTmpCourant), MARQUEUR_TIC);
+  fprintf(fp, "JMF %d %s\n", ts_addr(nomVarTmpCourant, nom_fonc), MARQUEUR_TIC);
   ligneAsmCourant++;	
 
   // depiler la var tmp cree par Expression
@@ -388,7 +388,8 @@ void remplacerMarqueursTIC(FILE* fileAsm, char* finalFilename) {
 
 
 int main(int argc, char** argv) { int opt;
-
+  
+  nom_fonc = GLOBAL  ; 
   char* outputFilename = "o.asm";
   char* outputInt1 = "o1.asm";  
   char* outputFinalFilename = "output.asm";
@@ -424,7 +425,7 @@ int main(int argc, char** argv) { int opt;
   // initialiser tab symboles 
   ts_init();
   // cette ligne est couple avec le tab symboles
-  fprintf(fp, "AFC %d 0\n", ts_addr(NOM_VAR_ZERO));
+  fprintf(fp, "AFC %d 0\n", ts_addr(NOM_VAR_ZERO, nom_fonc));
   ligneAsmCourant++;
   fprintf(fp, "JMP %s %s\n", MARQUEUR_FCT, "main");
   ligneAsmCourant++;
