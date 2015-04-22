@@ -11,7 +11,7 @@ SPACE  [\t ]+
 DIGITS [0-9]+
 NOMVAR [a-zA-Z][a-zA-Z0-9_]* 
 EXPONENTIEL {DIGITS}e{DIGITS}
-STRING "[.]*"
+STRING \".*\"
 
 /*** Comment handle ***/
 
@@ -58,7 +58,7 @@ while      { return tWHILE ; }
 {NOMVAR}   { yylval.chaine=strdup(yytext) ; return VAR ; }
 {EXPONENTIEL} { return EXP /* printf("Entier (exponentiel): %s\n", yytext) */ ;}   
 {DIGITS} { /* [0-9]+ matches a string of one or more digits */ yylval.nombre=atoi(yytext) ; return NOMBRE ;}
-{STRING} { return TXT ; }
+{STRING} {yylval.string=strdup(yytext) ; return TXT ; }
 
 .|\n    { logger_error("[LEX] : Non reconnu\n"); }
  

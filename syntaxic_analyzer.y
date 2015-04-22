@@ -28,7 +28,7 @@
 
   %}
 
-%token  EXP TXT 
+%token  EXP  
 %token  tEGAL tPLUS tMOINS tFOIS  tDIVISE
 %token  tPARO tPARF tACCO tACCF
 %token  tINT tCONST  
@@ -39,12 +39,14 @@
 %token <chaine> VAR
 %union {char* chaine;} 
 
+%token <string> TXT
+%union {char* string;}
+
 %token <nombre> NOMBRE
 %union {int nombre;}
 
 %type <expr> Expression
 %union {int expr;}
-
 
 %left tPLUS  tMOINS
 %left tFOIS  tDIVISE
@@ -137,12 +139,19 @@ AppelFonction:	VAR tPARO tPARF tFININSTRUCTION {
 } 
 ; 
 
-Affichage: tECHO tPARO Expression tPARF     
+Affichage: tECHO tPARO ContenuAffichage tPARF ; 
+
+ContenuAffichage: Expression      
 {
-  fprintf(fp, "PRI %d\n", $3);
+  fprintf(fp, "PRI %d\n", $1);
   ligneAsmCourant++;
   ts_depiler();
   nbVarTmpCourant--;
+}
+|                 TXT
+{
+  fprintf(fp, "PRI %s\n", $1);
+  ligneAsmCourant++;
 }
 ;
 

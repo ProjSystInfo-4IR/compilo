@@ -1,19 +1,18 @@
+int b = 4 ; 
+
 ok3() ; 
 ok4() ; 
 
 ok(){
-  int e = 1 ; 
-  if(e) {
-    printf(e) ; 
-    ok3() ; 
-    ok() ; 
+  int a = 1 ; 
+  if(a) {
+    printf(a+b) ; 
   }  
 }
 
 ok5() ; 
 
-ok2(){
-  int b = 55 ; 
+ok2(){ 
   int z = 14 ;  
   ok() ; 
   ok2() ; 
@@ -26,16 +25,18 @@ ok2(){
 } 
 
 main() { 
-  int a = 1 ;  
+  int a = 1 ; 
+  int z ;  
   ok2() ; 
   ok()  ;
   if(1) { 
-    ok3() ; 
+    a = 444; 
   } 
 }
 
 
 ok3(){
-  int test = 44 ;  
+  int z = 44 ;  
+  printf("test") ; 
 } 
 
