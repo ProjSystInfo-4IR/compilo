@@ -22,6 +22,7 @@
   int nbVarTmpCourant = 0;
   char nomVarTmpCourant[NB_VAR_TEMPORAIRE_MAX];
   char* nom_fonc  ; 
+  char* MAIN = "main" ; 
   const char* MARQUEUR_TIC = "???";
   const char* MARQUEUR_FCT = "$$$" ; 
   FILE* fp ;
@@ -66,13 +67,13 @@ DeclFonction:		tFININSTRUCTION  { logger_info ("Fonction %s déclarée \n", nom_
 DefFonction:	        tACCO { set_code_decl(nom_fonc) ; set_start(nom_fonc, ligneAsmCourant) ; } 
 Operations tACCF 
 {  
-  fprintf(fp, "POP %s\n", "%eip");	// retour fonction mère 
+  fprintf(fp, "RET\n");	// retour fonction mère 
   ligneAsmCourant++;
   logger_info ("Fonction %s définie \n", nom_fonc) ; 
 } ;
 
-MainProg:		tMAIN { nom_fonc = "main" ; ajout_fct("main") ; set_code_decl("main") ; set_start("main", ligneAsmCourant) ;} tPARO tPARF tACCO Operations tACCF {                         
-  fprintf(fp, "LEAVE\n");
+MainProg:		tMAIN { nom_fonc = MAIN ; ajout_fct(MAIN) ; set_code_decl(MAIN) ; set_start(MAIN, ligneAsmCourant) ;} tPARO tPARF tACCO Operations tACCF {                         
+  fprintf(fp, "LEAVE\n"); // fin du programme (quitter)
   ligneAsmCourant++;
   logger_info ("Fin du main à la ligne %d \n", ligneAsmCourant-1) ;
 }  ;
@@ -131,9 +132,7 @@ Instruction:  Affichage tFININSTRUCTION
 ;
 
 AppelFonction:	VAR tPARO tPARF tFININSTRUCTION { 
-  fprintf(fp, "PUSH %s\n" , "%eip");
-  ligneAsmCourant++;
-  fprintf(fp, "JMP %s %s\n", MARQUEUR_FCT, $1);
+  fprintf(fp, "CALL %s %s\n", MARQUEUR_FCT, $1); // appel fonction 
   ligneAsmCourant++;
   logger_info ("Fonction %s appelée \n", $1) ;   
 } 
@@ -143,14 +142,14 @@ Affichage: tECHO tPARO ContenuAffichage tPARF ;
 
 ContenuAffichage: Expression      
 {
-  fprintf(fp, "PRI %d\n", $1);
+  fprintf(fp, "PRI %d\n", $1); // afficher un integer
   ligneAsmCourant++;
   ts_depiler();
   nbVarTmpCourant--;
 }
 |                 TXT
 {
-  fprintf(fp, "PRI %s\n", $1);
+  fprintf(fp, "PRI %s\n", $1); // afficher une chaîne de caractères
   ligneAsmCourant++;
 }
 ;
@@ -436,7 +435,7 @@ int main(int argc, char** argv) { int opt;
   // cette ligne est couple avec le tab symboles
   fprintf(fp, "AFC %d 0\n", ts_addr(NOM_VAR_ZERO, nom_fonc));
   ligneAsmCourant++;
-  fprintf(fp, "JMP %s %s\n", MARQUEUR_FCT, "main");
+  fprintf(fp, "JMP %s %s\n", MARQUEUR_FCT, MAIN);
   ligneAsmCourant++;
 
 
