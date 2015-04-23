@@ -8,17 +8,17 @@ Compilateur du langage C (simplifié) basé sur LEX et YACC en instructions asse
 * Diffférenciation entre déclarations et définitions de fonctions
 * Possibilité de déclarer des surcharges (même nom, mais différents nombre d'arguments)
 * Instructions ASM utilisés :  
-    ø CALL {ligneASM} <function> <nb_args> ; appel à une fonction à <nb_args>
-    ø RET ; retour fonction précédente
-    ø PUSH @adresse ; empiler l'argument situ à adresse @adresse 
-    ø POP ; récupérer le dernier argument empilé
-    ø LEAVE ; instruction pour quitter le programme
+    - CALL {ligneASM} function nb_args ; appel à une fonction à nb_args
+    - RET ; retour fonction précédente
+    - PUSH @adresse ; empiler l'argument situ à adresse @adresse 
+    - POP ; récupérer le dernier argument empilé
+    - LEAVE ; instruction pour quitter le programme
 * Modification table des symboles : chaque variable est liée à une fonction (ou à GLOBAL) 
-* printf(<string>) (lex + grammaire fait)  
+* printf(string) (lex + grammaire fait)  
 
 ## Limites / Blocages 
 * problème variables locales dans le cas des surcharges (rajouter nb_args dans tab_symboles pour différencier les fonctions ou abandonner l'idée ?)  
-* printf <string> : retransciption en "ASM PRI <string>" à revoir ? s'inspirer de ce qu'on fait avec les integers (tab_symboles) pour les strings également ?
+* printf (string) : retransciption en "ASM PRI (string)" à revoir ? s'inspirer de ce qu'on fait avec les integers (tab_symboles) pour les strings également ?
 * PUSH des arguments avant CALL , POP début de la fonction -> comment bien récupérer les arguments ? 
 
 ## RAF (essentiel)
