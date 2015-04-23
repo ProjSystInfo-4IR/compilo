@@ -20,6 +20,9 @@
   int ligneAsmCourant = 1;
   int flagConst ;
   int nbVarTmpCourant = 0;
+  int nb_args ; 
+  int NB_ARGS_MAIN = 0 ; 
+  int cpt ; 
   char nomVarTmpCourant[NB_VAR_TEMPORAIRE_MAX];
   char* nom_fonc  ; 
   char* MAIN = "main" ; 
@@ -58,13 +61,34 @@
 
 Input:			Declarations DebFonctions MainProg DebFonctions ; 
 
-DebFonctions:           VAR tPARO tPARF { ajout_fct($1) ; nom_fonc = $1 ; } SuiteFct DebFonctions | ; 
+DebFonctions:           VAR {nb_args = 0 ; nom_fonc = $1 ;} tPARO ListeArgs tPARF { ajout_fct($1, nb_args) ; } SuiteFct DebFonctions | ; 
+
+ListeArgs: Type Var Args | ; 
+
+Args: tVIRGULE Type Var Args | ;  
+
+Type: tINT ; 
+
+Var: VAR {
+  nb_args++;
+  if (ts_addr($1, nom_fonc) == -1) { 
+    ts_ajouter($1, nom_fonc, flagConst, 1);
+  } else { 
+    logger_info("fonction %s : Argument %s déjà déclaré\n", nom_fonc, $1); 
+  }} ; 
 
 SuiteFct:               DeclFonction | DefFonction ;
 
 DeclFonction:		tFININSTRUCTION  { logger_info ("Fonction %s déclarée \n", nom_fonc) ; } ; 
 
-DefFonction:	        tACCO { set_code_decl(nom_fonc) ; set_start(nom_fonc, ligneAsmCourant) ; } 
+DefFonction:	        tACCO { 
+  set_code_decl(nom_fonc, nb_args) ; 
+  set_start(nom_fonc, ligneAsmCourant, nb_args) ; 
+  for(cpt=0 ; cpt < nb_args ; cpt++) {
+     fprintf(fp, "POP\n"); // récupère argument (à revoir : comment faire après ?)  
+     ligneAsmCourant++;
+  }
+} 
 Operations tACCF 
 {  
   fprintf(fp, "RET\n");	// retour fonction mère 
@@ -72,7 +96,7 @@ Operations tACCF
   logger_info ("Fonction %s définie \n", nom_fonc) ; 
 } ;
 
-MainProg:		tMAIN { nom_fonc = MAIN ; ajout_fct(MAIN) ; set_code_decl(MAIN) ; set_start(MAIN, ligneAsmCourant) ;} tPARO tPARF tACCO Operations tACCF {                         
+MainProg:		tMAIN { nom_fonc = MAIN ; ajout_fct(MAIN, NB_ARGS_MAIN) ; set_code_decl(MAIN, NB_ARGS_MAIN) ; set_start(MAIN, ligneAsmCourant, NB_ARGS_MAIN) ;} tPARO tPARF tACCO Operations tACCF {                         
   fprintf(fp, "LEAVE\n"); // fin du programme (quitter)
   ligneAsmCourant++;
   logger_info ("Fin du main à la ligne %d \n", ligneAsmCourant-1) ;
@@ -131,12 +155,24 @@ Instruction:  Affichage tFININSTRUCTION
 | error  tFININSTRUCTION	{ yyerrok; }
 ;
 
-AppelFonction:	VAR tPARO tPARF tFININSTRUCTION { 
-  fprintf(fp, "CALL %s %s\n", MARQUEUR_FCT, $1); // appel fonction 
+AppelFonction:	VAR {nb_args = 0 ;} tPARO ListeArgsFct tPARF tFININSTRUCTION { 
+  fprintf(fp, "CALL %s %s %d\n", MARQUEUR_FCT, $1, nb_args); // appel fonction 
   ligneAsmCourant++;
   logger_info ("Fonction %s appelée \n", $1) ;   
 } 
 ; 
+
+ListeArgsFct: ArgFct ArgsFct | ; 
+
+ArgsFct: tVIRGULE ArgFct ArgsFct | ;  
+
+ArgFct: Expression { 
+  nb_args++ ; 
+  fprintf(fp, "PUSH %d\n", $1); // (à revoir) empile l'argument en question 
+  ligneAsmCourant++;
+  ts_depiler();
+  nbVarTmpCourant--;
+}; 
 
 Affichage: tECHO tPARO ContenuAffichage tPARF ; 
 
@@ -147,7 +183,7 @@ ContenuAffichage: Expression
   ts_depiler();
   nbVarTmpCourant--;
 }
-|                 TXT
+|                 TXT          // BETA version affichage string ; à revoir ? 
 {
   fprintf(fp, "PRI %s\n", $1); // afficher une chaîne de caractères
   ligneAsmCourant++;
@@ -306,7 +342,7 @@ void remplacerMarqueursFCT(FILE* fileAsm, char* finalFilename) {
   size_t len;
   char instruction[WORD_CAPACITY];
   char nom_fct[WORD_CAPACITY];
-  int arg1;
+  int nombre_arguments ; 
   FILE* fp2 = fopen(finalFilename, "w");
   
   logger_info("\n Remplacement des marqueurs FCT  \n") ;	
@@ -314,13 +350,13 @@ void remplacerMarqueursFCT(FILE* fileAsm, char* finalFilename) {
   while((read = getline(&line, &len, fileAsm)) != -1) {
     logger_info("%2d : %s", lineNum, line);
     // read each word of line
-    c = sscanf(line,"%s %s %s",instruction, possibleMarqueur, nom_fct);   // parse line to 3 parts 
+    c = sscanf(line,"%s %s %s %d",instruction, possibleMarqueur, nom_fct, &nombre_arguments);   // parse line to 3 parts 
     if (!strcmp(possibleMarqueur, MARQUEUR_FCT)) {
       // Marqueur trouvé !
       // XXX: cette technique suppose une telle format de l'instruction : INSTRUCTION MARQUEUR NOM_FCT 
-      if(get_start(nom_fct) != -1) {
-	logger_info("Marker found on line %d, to be replaced by %d\n", lineNum, get_start(nom_fct));
-	fprintf(fp2, "%s %d %s\n", instruction, get_start(nom_fct), nom_fct);
+      if(get_start(nom_fct, nombre_arguments) != -1) {
+	logger_info("Marker found on line %d, to be replaced by %d\n", lineNum, get_start(nom_fct, nombre_arguments));
+	fprintf(fp2, "%s %d %s %d \n", instruction, get_start(nom_fct, nombre_arguments), nom_fct, nombre_arguments);
       }
       else {
 	logger_info("Marker found on line %d, but impossible to replace", lineNum);
