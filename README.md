@@ -10,16 +10,20 @@ Compilateur du langage C (simplifié) basé sur LEX et YACC en instructions asse
 * Instructions ASM utilisés :  
     - CALL {ligneASM} function nb_args ; appel à une fonction à nb_args
     - RET ; retour fonction précédente
-    - PUSH @adresse ; empiler l'argument situ à adresse @adresse 
-    - POP ; récupérer le dernier argument empilé
+    - PUSH @adresse ; empiler l'argument situé à adresse @adresse 
+    - POP @adresse ; récupérer le dernier élément empilé et l'affecter à la variable d'adresse @adresse
     - LEAVE ; instruction pour quitter le programme
+* PUSH des arguments dans l'ordre avant CALL puis POP (affectation aux arguments) en début de la fonction :  
+    - solutions mode FIFO
+    - solution mode LIFO (commentée) 
+    - -> Commenter / décommenter en fonction de l'implémentation de la pile ASM choisie dans interpreto  
 * Modification table des symboles : chaque variable est liée à une fonction (ou à GLOBAL) 
 * printf(string) (lex + grammaire fait)  
 
 ## Limites / Blocages 
 * problème variables locales dans le cas des surcharges (rajouter nb_args dans tab_symboles pour différencier les fonctions ou abandonner l'idée ?)  
 * printf (string) : retransciption en "ASM PRI (string)" à revoir ? s'inspirer de ce qu'on fait avec les integers (tab_symboles) pour les strings également ?
-* PUSH des arguments avant CALL , POP début de la fonction -> comment bien récupérer les arguments ? 
+
 
 ## RAF (essentiel)
 * Interpreteur à finaliser (notamment pour la gestion de fonctions : gestion CALL / RET / LEAVE / PUSH / POP , avec maitrise de ebp, esp, eip)
