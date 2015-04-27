@@ -13,7 +13,7 @@ ok(){
 ok5() ; 
 
 ok2(){ 
-  int z, b = 14 ;  
+  int z, b1 = 14 ;  
   ok() ; 
   ok2() ; 
   if (2) { 

@@ -59,7 +59,7 @@
 %start Input
 %%
 
-Input:			Declarations DebFonctions MainProg DebFonctions ; 
+Input:			Declarations { fprintf(fp, "JMP %s %s\n", MARQUEUR_FCT, MAIN); ligneAsmCourant++; } DebFonctions MainProg DebFonctions ; 
 
 DebFonctions:           VAR {nb_args = 0 ; nom_fonc = $1 ;} tPARO ListeArgs tPARF { ajout_fct($1, nb_args) ; } SuiteFct DebFonctions | ; 
 
@@ -356,7 +356,10 @@ void remplacerMarqueursFCT(FILE* fileAsm, char* finalFilename) {
       // XXX: cette technique suppose une telle format de l'instruction : INSTRUCTION MARQUEUR NOM_FCT 
       if(get_start(nom_fct, nombre_arguments) != -1) {
 	logger_info("Marker found on line %d, to be replaced by %d\n", lineNum, get_start(nom_fct, nombre_arguments));
-	fprintf(fp2, "%s %d %s %d \n", instruction, get_start(nom_fct, nombre_arguments), nom_fct, nombre_arguments);
+	/* afficher nom fonction et nombre arguments  
+           fprintf(fp2, "%s %d %s %d \n", instruction, get_start(nom_fct, nombre_arguments), nom_fct, nombre_arguments);
+        */
+        fprintf(fp2, "%s %d\n", instruction, get_start(nom_fct, nombre_arguments));  
       }
       else {
 	logger_info("Marker found on line %d, but impossible to replace", lineNum);
@@ -470,8 +473,6 @@ int main(int argc, char** argv) { int opt;
   ts_init();
   // cette ligne est couple avec le tab symboles
   fprintf(fp, "AFC %d 0\n", ts_addr(NOM_VAR_ZERO, nom_fonc));
-  ligneAsmCourant++;
-  fprintf(fp, "JMP %s %s\n", MARQUEUR_FCT, MAIN);
   ligneAsmCourant++;
 
 
