@@ -249,7 +249,7 @@ NOMBRE                          {
   $$ = $1;
 }  
 | Expression tMOINS Expression	{ 
-  fprintf(fp, "SUB %d %d %d\n", $1, $1, $3) ; 
+  fprintf(fp, "SOU %d %d %d\n", $1, $1, $3) ; 
   ligneAsmCourant++;
   ts_depiler(); 
   nbVarTmpCourant--; 
