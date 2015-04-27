@@ -5,7 +5,7 @@ ok(int lol){
   int e = 1 ; 
   if(e) {
     printf(e) ; 
-    ok(1) ; 
+    ok3(e,lol,lol) ; 
   }  
 }
 

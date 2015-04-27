@@ -15,12 +15,14 @@
 #define NB_VAR_TEMPORAIRE_MAX 50  
 #define LINE_CAPACITY 100 // Nb maximum de characteres dans une ligne de code assembleur que le compilateur peut générer
 #define WORD_CAPACITY 32  // attention un nom de fonction ne peut excéder 32 caratères  
+#define NB_ARGS_MAX 20 // nombre maximum d'argumets pour une fonction
 
   extern FILE * yyin;
   int ligneAsmCourant = 1;
   int flagConst ;
   int nbVarTmpCourant = 0;
   int nb_args ; 
+  int adresseArgs[NB_ARGS_MAX] ; 
   int NB_ARGS_MAIN = 0 ; 
   int cpt ; 
   char nomVarTmpCourant[NB_VAR_TEMPORAIRE_MAX];
@@ -70,12 +72,14 @@ Args: tVIRGULE Type Var Args | ;
 Type: tINT ; 
 
 Var: VAR {
-  nb_args++;
   if (ts_addr($1, nom_fonc) == -1) { 
-    ts_ajouter($1, nom_fonc, flagConst, 1);
+    ts_ajouter($1, nom_fonc, flagConst, 1); 
   } else { 
     logger_info("fonction %s : Argument %s déjà déclaré\n", nom_fonc, $1); 
-  }} ; 
+  }  
+  adresseArgs[nb_args] = ts_addr($1,  nom_fonc) ; 
+  nb_args++; 
+  } ; 
 
 SuiteFct:               DeclFonction | DefFonction ;
 
@@ -85,8 +89,10 @@ DefFonction:	        tACCO {
   set_code_decl(nom_fonc, nb_args) ; 
   set_start(nom_fonc, ligneAsmCourant, nb_args) ; 
   for(cpt=0 ; cpt < nb_args ; cpt++) {
-     fprintf(fp, "POP\n"); // récupère argument (à revoir : comment faire après ?)  
-     ligneAsmCourant++;
+    // les arguments récupèrent les valeurs affectées lors de l'appel de la fonction  
+    fprintf(fp, "POP %d\n", adresseArgs[nb_args-1-cpt]); // cas PUSH/POP LIFO (pile)   
+    //fprintf(fp, "POP %d\n", adresseArgs[cpt]); // cas PUSH/POP FIFO (file)
+    ligneAsmCourant++;
   }
 } 
 Operations tACCF 
