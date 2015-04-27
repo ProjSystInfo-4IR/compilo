@@ -32,12 +32,15 @@ void tab_fct_init() {
 }
 
 // tester existance fonction avec le nombre d'arguments en question
-// returne 0 si elle n'existe pas , 1 si elle existe deja
+// returne 0 si elle n'existe pas , 
+//         1 si elle existe deja, 
+//         2 si elle existe mais avec un autre nombre d'arguments
 int fct_exist(char* name, int nb_args) {
   int ret = 0 ;
   int i ; 
   for(i = 0 ; i < index_tab_fct ; i++) {
     if (!strcmp(name, pile_fct[i].name)){ 
+      ret = 2 ; 
       if(pile_fct[i].nb_args == nb_args) {
       ret = 1 ; 
       }
@@ -50,6 +53,9 @@ int fct_exist(char* name, int nb_args) {
 void ajout_fct(char* name, int nb_args) {
   if (fct_exist(name, nb_args) == 1) {
     logger_info("La fonction %s (%d arguments) a déjà été déclarée \n", name, nb_args);
+  } 
+  else if (fct_exist(name, nb_args) == 2) {
+    logger_error("La fonction %s a déjà été déclarée avec un nombre différent d'arguments\n", name, nb_args);
   } 
   else { 
     pile_fct[index_tab_fct].name = name ; 
