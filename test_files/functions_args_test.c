@@ -34,12 +34,12 @@ main() {
 }
 
 
-ok3(){
+ok88(){
   int t = 44 ;  
   t = t + 1 ; 
 } 
 
 ok3(int test, int lol, int ok) {
-ok = t + 4 ; 
+ok = test + 4 ; 
 ok(test) ; 
 } 

@@ -1,8 +1,10 @@
 //fonction qui met a 0 l'index 
 void tab_fct_init() ; 
 
-// tester existance fonction avec le nombre d'arguments indiqués
-// returne 0 si elle n'existe pas , 1 si elle existe deja
+// tester existance fonction avec le nombre d'arguments en question
+// returne 0 si elle n'existe pas , 
+//         1 si elle existe deja, 
+//         2 si elle existe mais avec un autre nombre d'arguments
 int fct_exist(char* name, int nb_args) ;
 
 // ajout d'une fonction 
