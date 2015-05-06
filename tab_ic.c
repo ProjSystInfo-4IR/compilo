@@ -14,16 +14,16 @@ struct  tb_bloc {
 } ; 
 
 
-// tableau des symboles, mémorisation des variables en mémoire 
-// ATTENTION ! Limitation à 1024 variables !
-// index_tab_tic est l'index courant dans le tableau
+/* tableau des symboles, mémorisation des variables en mémoire 
+ * ATTENTION ! Limitation à 1024 variables !
+ * index_tab_tic est l'index courant dans le tableau
+ */ 
 int index_tab_tic ; 
 struct tb_bloc pile[TAILLE] ; 
 
 
-
+/* fonction qui met a -4 l'index et qui alloue mémoire au tableau et l'initialise (memset) */
 void tic_init() {
-  //fonction qui met a -4 l'index et qui alloue mémoire au tableau et l'initialise (memset)
   index_tab_tic = 0 ; 
   memset(pile, -1, TAILLE*sizeof(struct tb_bloc)) ; 
 }
@@ -31,18 +31,18 @@ void tic_init() {
 
 /* ajout dans table des instructions de controles, connaissant la source */ 
 void tic_ajouter_s(int source) {
-    pile[index_tab_tic].addr_src = source ; 
-    index_tab_tic++ ;   
+  pile[index_tab_tic].addr_src = source ; 
+  index_tab_tic++ ;   
 }
 
 /* ajout dans table des instructions de controles, connaissant la destination */ 
 void tic_ajouter_d(int dest) {
-    pile[index_tab_tic].addr_dst = dest ; 
-    index_tab_tic++ ;   
+  pile[index_tab_tic].addr_dst = dest ; 
+  index_tab_tic++ ;   
 }
 
 
-// supprimer variable en mémoire (pas de désallocation)
+/* supprimer variable en mémoire (pas de désallocation) */
 void tic_depiler() {
   if (index_tab_tic == MIN_TAILLE) {
     logger_error("Dépiler impossible\n");
@@ -93,6 +93,9 @@ void tic_set_dest(int dest) {
   }
   pile[index_to_assign].addr_dst = dest;
 }
+
+
+
 
 /* GETTERS */
 int tic_get_dest(int src) {  int i;

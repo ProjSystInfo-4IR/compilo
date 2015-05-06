@@ -1,7 +1,6 @@
 /*** Definition section ***/
  
 %{
-/* C code to be copied verbatim */
 #include <stdio.h>
 #include "y.tab.h"
 #include "dumb-logger/logger.h"
@@ -15,20 +14,21 @@ STRING \".*\"
 
 /*** Comment handle ***/
 
-/* %x : exclusive start condition >< %s : exclusive start condition */
 %x BLOCK_COMMENT
 %x LINE_COMMENT
 %%
 
-"/*" 					{BEGIN BLOCK_COMMENT;}
+"/*" 			{BEGIN BLOCK_COMMENT;}
 <BLOCK_COMMENT>"*/" 	{BEGIN INITIAL;}
-<BLOCK_COMMENT>.		{}                // consume all characters 
+<BLOCK_COMMENT>.	{}                // consume all characters 
 <BLOCK_COMMENT>\n     	{}                // consume all lines
 
 
 "//"         			{BEGIN LINE_COMMENT;}
 <LINE_COMMENT>\n 		{BEGIN INITIAL;}
 <LINE_COMMENT>.         {}                // consume all characters
+
+
 
  /*** Rules section ***/
 
@@ -56,7 +56,7 @@ while      { return tWHILE ; }
 ,          { return tVIRGULE ; }
 ;          { return tFININSTRUCTION; }
 {NOMVAR}   { yylval.chaine=strdup(yytext) ; return VAR ; }
-{EXPONENTIEL} { return EXP /* printf("Entier (exponentiel): %s\n", yytext) */ ;}   
+{EXPONENTIEL} { return EXP ;}   
 {DIGITS} { /* [0-9]+ matches a string of one or more digits */ yylval.nombre=atoi(yytext) ; return NOMBRE ;}
 {STRING} {yylval.string=strdup(yytext) ; return TXT ; }
 

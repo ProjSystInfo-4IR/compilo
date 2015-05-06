@@ -10,4 +10,6 @@ int logger_set_level(int mode);
 
 int logger_get_level();
 
+int get_nb_errors_occured() ;
+
 int logger_set_prefix(char* custom_prefix);

@@ -7,8 +7,8 @@
 #define TAILLE 1024
 #define MIN_TAILLE 1
 
-char* NOM_VAR_ZERO = "VAR_ZERO";
-char* GLOBAL = "_GLOBAL" ; // pour variables globales
+char* NOM_VAR_ZERO = "VAR_ZERO"; // déclaration du zéro (utile pour les négations)
+char* GLOBAL = "_GLOBAL" ; // nom de fonction pour variables globales
 
 // Tableau des symboles -> 4 paramètres : nom, initialisé ? , constant ? , adresse mémoire
 struct ts_parametres {
@@ -27,9 +27,8 @@ int index_tab ;
 struct ts_parametres table_symboles[TAILLE] ; 
 
 
-
+//fonction qui met a zero l'index et qui alloue mémoire au tableau et l'initialise (memset)
 void ts_init() {
-  //fonction qui met a zero l'index et qui alloue mémoire au tableau et l'initialise (memset)
   index_tab = 0 ; 
   memset(table_symboles, 0 , TAILLE*sizeof(struct ts_parametres)) ; 
   ts_ajouter(NOM_VAR_ZERO, GLOBAL, 1, 1);
@@ -53,12 +52,12 @@ int ts_addr(char * nom, char * func) {
 
 // ajout dans table des symboles 
 void ts_ajouter(char * nom, char * func , int est_constant, int est_initialise) {
-    table_symboles[index_tab].nom = nom ; 
-    table_symboles[index_tab].func = func ; 
-    table_symboles[index_tab].is_constant = est_constant ; 
-    table_symboles[index_tab].is_initialized = est_initialise ; 
-    table_symboles[index_tab].adrMem = index_tab ; 
-    index_tab++ ;   
+  table_symboles[index_tab].nom = nom ; 
+  table_symboles[index_tab].func = func ; 
+  table_symboles[index_tab].is_constant = est_constant ; 
+  table_symboles[index_tab].is_initialized = est_initialise ; 
+  table_symboles[index_tab].adrMem = index_tab ; 
+  index_tab++ ;   
 }
 
 

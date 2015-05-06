@@ -1,12 +1,12 @@
 SHELL=bash
-TARGETS=cible
+TARGETS=simpleGCC
 OBJECTS=
 LDFLAGS=
 CFLAGS=-Wall -Werror -c
 
 all: $(TARGETS)
 
-cible: y.tab.c lex.yy.c tab_symboles.o tab_ic.o tab_fct.o logger.o
+simpleGCC: y.tab.c lex.yy.c tab_symboles.o tab_ic.o tab_fct.o logger.o
 	gcc y.tab.c lex.yy.c tab_symboles.o tab_ic.o tab_fct.o logger.o -ll -o $@ 
 
 y.tab.o: y.tab.c  lex.yy.o

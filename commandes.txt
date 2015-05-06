@@ -1,9 +1,0 @@
-// tester compilateur avec un programme C  t.c
-cat t.c | ./cible.c
-
-// RAF :
-  - interpreteur
-  - function
-  - traitement d'erreur
-  - pointeur
-  - chaine de caractere
