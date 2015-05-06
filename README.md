@@ -8,7 +8,7 @@ Compilateur du langage C (simplifié) basé sur LEX et YACC en instructions asse
 
 2- Compilation d'un fichier C (*cf plus bas les fonctionalités C supportées*) :
 
-`~/compilo$ ./simpleGCC test_files/print_string_test.c [flags]`
+`~/compilo$ ./simpleGCC [fichier_a_compiler.c] [flags]`
 
 
 - Sans flags, seules les erreurs de compilation apparaissent et le fichier de sortie (par default) est output.asm .
@@ -20,7 +20,7 @@ Compilateur du langage C (simplifié) basé sur LEX et YACC en instructions asse
 * Variables et constantes : le seul type accepté est integer (int) 
 * Variables locales : les déclarations dans la fonction doivent se faire avant toute instruction 
 * Déclarations des variables globales : elles doivent se faire au tout début du fichier C (avant toute déclaration de fonctions)  
-* Expressions arithmétiques : elles ne sont possibles que sur des intergers ( '(', ')', '+', '-', '*', '/' uniquement) 
+* Expressions arithmétiques : elles ne sont possibles que sur des integers ( '(', ')', '+', '-', '*', '/' uniquement) 
 * Expressions conditionnelles IF et WHILE : 0 vaut "false", les autres integers valent "true" 
 * Fonctions déclarées / définies : Toute déclaration (et définitions) de fonctions peut se faire avant ou après le main ; notez que le compilateur sait faire la différence entre déclarations et définitions de fonctions
 * Arguments des fonctions : 0, 1  ou plusieurs aarguments pour les fonctions, sauf pour main (pas d'arguments)
@@ -29,7 +29,8 @@ Compilateur du langage C (simplifié) basé sur LEX et YACC en instructions asse
 ## Limites (ce qu'il faudrait revoir)
 * Traitement des erreurs : n'affiche pas la ligne du fichier C où une erreur est détectée. 
 * Fonctions (main compris) : les fonctions ne retournent rien, elles sont déclarées directement sans type défini ( ex : `fonction1(arg1, arg2) { ...} ` )  
-* Affichage avec printf (string) : retransciption en `ASM PRI {string}` à revoir ? s'inspirer dajouter el type string/char* dans la table des symboles ? 
+* Affichage avec printf (string) : retransciption en `ASM PRI {string}` à revoir ? Ajouter le type string/char* dans la table des symboles ?
+
 
 ## Informations complémentaires 
 * Instructions ASM utilisés en supplément de celles proposées dans le sujet du projet :  
