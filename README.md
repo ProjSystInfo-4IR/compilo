@@ -3,7 +3,7 @@ Compilateur du langage C (simplifié) basé sur LEX et YACC en instructions asse
 
 ## Utilisation 
 * Makefile : obtention du programme "simpleGCC", notre compilateur C simplifié : 
-> ~/compilo$ make
+` ~/compilo$ make `
 * Compilation d'un fichier C (cf plus bas les fonctionalités C supportées) :
 > /compilo$ ./simpleGCC test_files/print_string_test.c -v
 > /compilo$ ./simpleGCC test_files/print_string_test.c 
