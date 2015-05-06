@@ -2,8 +2,10 @@
 #include <stdlib.h>
 #include <math.h>
 #include <string.h> 
+
 #include "tab_fct.h"
 #include "dumb-logger/logger.h"
+
 #define TAILLE 1024
 #define MIN_TAILLE 0
 
@@ -11,30 +13,34 @@
 
 // Structure stockee dans le tableau
 struct  tb_fct {
-  char* name;       // nom fonction 
+  char* name;         // nom fonction 
   int nb_args ;      // nombre d'arguments de la fonction 
-  int  start;       // ligne ASM où la fnction commence 
-  int  code_decl ;  // fonction définie
+  int  start;       // ligne ASM où la fonction commence 
+  int  code_decl ; // = 1 si la fonction est définie
 } ; 
 
 
 
-// tableau des fonctions, mémorisation des variables en mémoire 
-// ATTENTION ! Limitation à 1024 variables !
-// index_tab_fct est l'index courant dans le tableau
+/* 
+ *  tableau des fonctions, mémorisation des variables en mémoire 
+ * ATTENTION ! Limitation à 1024 variables !
+ * index_tab_fct est l'index courant dans le tableau
+ */
 int index_tab_fct ; 
 struct tb_fct pile_fct[TAILLE] ; 
 
 
-//fonction qui met a 0 l'index
+// fonction qui met a 0 l'index
 void tab_fct_init() { 
   index_tab_fct = 0 ; 
 }
 
-// tester existance fonction avec le nombre d'arguments en question
-// returne 0 si elle n'existe pas , 
-//         1 si elle existe deja, 
-//         2 si elle existe mais avec un autre nombre d'arguments
+/* 
+ * tester existance fonction avec le nombre d'arguments en question
+ * returne 0 si elle n'existe pas , 
+ *         1 si elle existe deja, 
+ *         2 si elle existe mais avec un autre nombre d'arguments
+ */
 int fct_exist(char* name, int nb_args) {
   int ret = 0 ;
   int i ; 
@@ -42,7 +48,7 @@ int fct_exist(char* name, int nb_args) {
     if (!strcmp(name, pile_fct[i].name)){ 
       ret = 2 ; 
       if(pile_fct[i].nb_args == nb_args) {
-      ret = 1 ; 
+	ret = 1 ; 
       }
     }
   }
@@ -120,7 +126,7 @@ int get_start(char* name, int nb_args) {
     }
   }
   if (ret == -1) {
-     logger_error("La fonction %s (%d arguments) n'existe pas (il faut la déclarer) \n", name, nb_args);
+    logger_error("La fonction %s (%d arguments) n'existe pas (il faut la déclarer) \n", name, nb_args);
   } 
   if (ret == -2) {
     ret = -1 ; 
