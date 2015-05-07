@@ -30,6 +30,8 @@
   /* Autres déclarations */ 
 
   extern FILE * yyin;  // YACC in
+  char inputFileName[100];
+  extern int yylineno;
   FILE* fp ; // fichier de sortie 
 
   int ligneAsmCourant = 1; // numéro de la ligne où on se trouve sur le fichier ASM produit 
@@ -389,7 +391,7 @@ tPARF tACCO Instructions tACCF
 %%
 
 int yyerror(char *s) {
-  logger_error("%s\n",s);
+  logger_error("[%s:%d]%s\n",inputFileName,yylineno,s);
 }
 
 
@@ -529,6 +531,7 @@ int main(int argc, char** argv) {
     return EXIT_FAILURE;
   }
   yyin = inputFile;
+  strcpy(inputFileName, argv[optind]);
 	
   // open file on mode read write
   fp = fopen(outputFilename,"w+");

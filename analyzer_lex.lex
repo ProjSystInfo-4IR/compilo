@@ -13,7 +13,7 @@ EXPONENTIEL {DIGITS}e{DIGITS}
 STRING \".*\"
 
 /*** Comment handle ***/
-
+%option yylineno
 %x BLOCK_COMMENT
 %x LINE_COMMENT
 %%
