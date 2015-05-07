@@ -54,5 +54,3 @@ ok3(int a){
   printf("test") ;
   } 
 } 
-
-

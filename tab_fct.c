@@ -9,7 +9,7 @@
 #define TAILLE 1024
 #define MIN_TAILLE 0
 
-
+extern int yylineno ; 
 
 // Structure stockee dans le tableau
 struct  tb_fct {
@@ -61,7 +61,7 @@ void ajout_fct(char* name, int nb_args) {
     logger_info("La fonction %s (%d arguments) a déjà été déclarée \n", name, nb_args);
   } 
   else if (fct_exist(name, nb_args) == 2) {
-    logger_error("La fonction %s a déjà été déclarée avec un nombre différent d'arguments\n", name, nb_args);
+    logger_lerror(yylineno, "La fonction %s a déjà été déclarée avec un nombre différent d'arguments\n", name, nb_args);
   } 
   else { 
     pile_fct[index_tab_fct].name = name ; 
@@ -80,7 +80,7 @@ void set_code_decl(char* name, int nb_args) {
   for(i = 0 ; i < index_tab_fct ; i++) {
     if (!strcmp(name, pile_fct[i].name) && pile_fct[i].nb_args == nb_args){ 
       if(pile_fct[i].code_decl == 1) {
-	logger_error("La définition %s de la fonction (%d arguments) a déjà été déclarée \n", name, nb_args);  
+	logger_lerror(yylineno, "La définition %s de la fonction (%d arguments) a déjà été déclarée \n", name, nb_args);  
 	ret = -2 ;   
       } 
       else { 
@@ -90,7 +90,7 @@ void set_code_decl(char* name, int nb_args) {
     }
   } 
   if (ret == -1) {
-    logger_error("La fonction %s (%d arguments) n'existe pas (il faut la déclarer) \n", name, nb_args);
+    logger_lerror(yylineno, "La fonction %s (%d arguments) n'existe pas (il faut la déclarer) \n", name, nb_args);
   } 
 }
 
@@ -106,7 +106,7 @@ void set_start(char* name, int start, int nb_args) {
     }
   } 
   if (ret == -1) {
-    logger_error("La fonction %s n'existe pas (il faut la déclarer) \n", name);
+    logger_lerror(yylineno, "La fonction %s n'existe pas (il faut la déclarer) \n", name);
   } 
 }
 

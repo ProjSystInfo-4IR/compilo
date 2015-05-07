@@ -7,6 +7,8 @@
 #define TAILLE 1024
 #define MIN_TAILLE 0
 
+extern int yylineno ; 
+
 // Structure stockee dans le tableau
 struct  tb_bloc {
   int addr_src;
@@ -45,7 +47,7 @@ void tic_ajouter_d(int dest) {
 /* supprimer variable en mémoire (pas de désallocation) */
 void tic_depiler() {
   if (index_tab_tic == MIN_TAILLE) {
-    logger_error("Dépiler impossible\n");
+    logger_lerror(yylineno, "Dépilation impossible\n");
     return;
   }
   pile[index_tab_tic-1].addr_src = -1;
@@ -72,7 +74,7 @@ void tic_print() {
 /*  SETTERS  */  
 void tic_set_source(int source) {
   if (index_tab_tic == 0) {
-    logger_error("TIC : Pas d'element pour affecter source %d\n", source);
+    logger_lerror(yylineno, "TIC : Pas d'element pour affecter source %d\n", source);
     return;
   }
   int index_to_assign = index_tab_tic - 1;
@@ -84,7 +86,7 @@ void tic_set_source(int source) {
 
 void tic_set_dest(int dest) {
   if (index_tab_tic == 0) {
-    logger_error("TIC : Pas d'element pour affecter dest %d\n", dest);
+    logger_lerror(yylineno, "TIC : Pas d'element pour affecter dest %d\n", dest);
     return;
   }
   int index_to_assign = index_tab_tic-1;

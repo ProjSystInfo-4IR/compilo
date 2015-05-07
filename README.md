@@ -24,10 +24,11 @@ Compilateur du langage C (simplifié) basé sur LEX et YACC en instructions asse
 * Expressions conditionnelles IF et WHILE : 0 vaut "false", les autres integers valent "true" 
 * Fonctions déclarées / définies : Toute déclaration (et définitions) de fonctions peut se faire avant ou après le main ; notez que le compilateur sait faire la différence entre déclarations et définitions de fonctions
 * Arguments des fonctions : 0, 1  ou plusieurs aarguments pour les fonctions, sauf pour main (pas d'arguments)
-* Affichage : Prise en charge de printf(arg1) avec arg1 de type int ou String (char*).   
+* Affichage : Prise en charge de printf(arg1) avec arg1 de type int ou string (char*).   
+* Traitement des erreurs : Affiche la ligne du fichier C où une erreur est détectée. 
+
 
 ## Limites (ce qu'il faudrait revoir)
-* Traitement des erreurs : n'affiche pas la ligne du fichier C où une erreur est détectée. 
 * Fonctions (main compris) : les fonctions ne retournent rien, elles sont déclarées directement sans type défini ( ex : `fonction1(arg1, arg2) { ...} ` )  
 * Affichage avec printf (string) : retransciption en `ASM PRI {string}` à revoir ? Ajouter le type string/char* dans la table des symboles ?
 

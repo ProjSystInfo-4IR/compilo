@@ -30,8 +30,8 @@
   /* Autres déclarations */ 
 
   extern FILE * yyin;  // YACC in
-  char inputFileName[100];
-  extern int yylineno;
+  char inputFileName[100]; // nom du fichier C analysé (100 caractères max) 
+  extern int yylineno; // ligne C actuelle aanalysée
   FILE* fp ; // fichier de sortie 
 
   int ligneAsmCourant = 1; // numéro de la ligne où on se trouve sur le fichier ASM produit 
@@ -170,13 +170,13 @@ VariablesDeclarations:  VAR tFININSTRUCTION {
     fprintf(fp, "AFC %d %d\n", ts_addr($1, nom_fonc), $3);
     ligneAsmCourant++;
   } else { 
-    logger_error("fonction %s : Symbole %s déjà déclaré\n", nom_fonc, $1); 
+    logger_lerror(yylineno, "fonction %s : Symbole %s déjà déclaré\n", nom_fonc, $1); 
   }}
 | VAR tVIRGULE VariablesDeclarations {
   if (ts_addr($1, nom_fonc) == -1) { 
     ts_ajouter($1, nom_fonc, flagConst, 0);
   } else { 
-   logger_error("fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
+    logger_lerror(yylineno, "fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
   }}
 | VAR tEGAL NOMBRE tVIRGULE VariablesDeclarations {
   if (ts_addr($1, nom_fonc) == -1) { 
@@ -184,7 +184,7 @@ VariablesDeclarations:  VAR tFININSTRUCTION {
     fprintf(fp, "AFC %d %d\n", ts_addr($1, nom_fonc), $3);
     ligneAsmCourant++;
   } else { 
-  logger_error("fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
+    logger_lerror(yylineno, "fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
   }}
 ;
 
@@ -204,9 +204,17 @@ Instruction:  Affichage tFININSTRUCTION
 // gestion de l'appel à une fonction 
 AppelFonction:	VAR {nb_args = 0 ;} tPARO ListeArgsFct tPARF tFININSTRUCTION 
 { 
+  if(fct_exist($1, nb_args) == 1) {
   fprintf(fp, "CALL %s %s %d\n", MARQUEUR_FCT, $1, nb_args);  
   ligneAsmCourant++;
   logger_info ("Fonction %s appelée \n", $1) ;   
+  }
+  else if (fct_exist($1, nb_args) == 2) {
+    logger_lerror(yylineno, "Fonction %s existe mais avec un nombre différent d'arguments \n", $1) ;
+  }
+ else  {
+    logger_lerror(yylineno, "Fonction %s n'existe pas \n", $1) ;
+  }
 } 
 ; 
 
@@ -249,11 +257,11 @@ Affectation:   VAR tEGAL Expression {
       nbVarTmpCourant--;
     }
     else {
-      logger_error("fonction %s : Constante %s initialisée détectée, modification impossible \n", nom_fonc, $1)  ; 	
+      logger_lerror(yylineno, "fonction %s : Constante %s initialisée détectée, modification impossible \n", nom_fonc, $1)  ; 	
     }
   }
   else {
-    logger_error("fonction %s : Variable %s non définie \n", nom_fonc, $1)  ;
+    logger_lerror(yylineno, "fonction %s : Variable %s non définie \n", nom_fonc, $1)  ;
   }							
 }
 ;
@@ -273,9 +281,9 @@ NOMBRE
 | VAR                           
 {
   if (ts_addr($1, nom_fonc) == -1) {
-   logger_error("fonction %s : Variable %s non déclarée\n", nom_fonc, $1); 		
+    logger_lerror(yylineno, "fonction %s : Variable %s non déclarée\n", nom_fonc, $1); 		
   } else if (est_initialise($1, nom_fonc) == 0) {
-   logger_error("fonction %s : Variable %s non initialisée\n", nom_fonc, $1);	
+   logger_lerror(yylineno, "fonction %s : Variable %s non initialisée\n", nom_fonc, $1);	
   } else { 
     sprintf(nomVarTmpCourant, "var_tmp%d", nbVarTmpCourant);
     logger_info("Stocker var %s dans var temporaire %s\n", $1, nomVarTmpCourant);
@@ -390,11 +398,10 @@ tPARF tACCO Instructions tACCF
 
 %%
 
+/* Affichage de la ligne C où un problème de parsing avec YACC survient */ 
 int yyerror(char *s) {
-  logger_error("[%s:%d]%s\n",inputFileName,yylineno,s);
+  logger_lerror(yylineno, "%s\n",s);
 }
-
-
 
 
 /* fonction permettant d'affecter les bonnes valeurs d'arguments pour les instructions ASM liées aux fonctions */ 
@@ -427,7 +434,6 @@ void remplacerMarqueursFCT(FILE* fileAsm, char* finalFilename) {
         fprintf(fp2, "%s %d\n", instruction, get_start(nom_fct, nombre_arguments));  
       }
       else {
-	logger_error("Marqueur trouvé à la ligne %d, mais impossible de remplacer\n", lineNum);
 	fprintf(fp2, "%s", line);
       }
     }
@@ -477,7 +483,6 @@ void remplacerMarqueursTIC(FILE* fileAsm, char* finalFilename) {
 	// Marqueur trouve' !
 	// XXX: cette technique suppose une telle format de l'instruction : INSTRUCTION MARQUEUR 
 	logger_info("Marqueur trouvé ligne %d, remplacement par %d\n", lineNum, tic_get_dest(lineNum));
-
 	fprintf(fp2, "%s %d\n", instruction, tic_get_dest(lineNum));
       }
       else {
@@ -532,6 +537,7 @@ int main(int argc, char** argv) {
   }
   yyin = inputFile;
   strcpy(inputFileName, argv[optind]);
+  logger_set_nom_fichier(inputFileName) ; 
 	
   // open file on mode read write
   fp = fopen(outputFilename,"w+");
@@ -564,11 +570,6 @@ int main(int argc, char** argv) {
   // supprime les fichiers ASM temporaires
   remove(outputFilename); // fichier brut apres parser
   remove(outputInt1) ;   // fichier avec marqueurs TIC remplacés uniquement 
-  
-  // A FAIRE
-  // si on a une erreur, le fichier asm final n'est pas bon 
-  // donc à supprimer 
-  // remove(outputFinalFilename);
  
   // affichage table des symboles, table des instructions et table des fonctions
   ts_print() ;

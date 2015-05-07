@@ -64,7 +64,7 @@ void ts_ajouter(char * nom, char * func , int est_constant, int est_initialise) 
 // supprimer variable en mémoire (pas de désallocation)
 void ts_depiler() {
   if (index_tab == MIN_TAILLE) {
-    logger_error("Dépiler impossible\n");
+    logger_error("Erreur table symbole : Action dépiler impossible\n");
     return;
   }
   index_tab-- ;   
