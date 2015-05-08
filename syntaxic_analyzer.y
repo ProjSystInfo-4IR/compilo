@@ -162,30 +162,37 @@ VariablesDeclarations:  VAR tFININSTRUCTION {
   if (ts_addr($1, nom_fonc) == -1) { 
     ts_ajouter($1, nom_fonc, flagConst, 0);
   } else { 
-    logger_error("fonction %s : Symbole %s déjà déclaré\n", nom_fonc, $1); 
+    logger_lerror(yylineno, "fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
   }}
-| VAR tEGAL NOMBRE tFININSTRUCTION {
+| VAR tEGAL Expression tFININSTRUCTION {
   if (ts_addr($1, nom_fonc) == -1) { 
+    ts_print();
+    ts_depiler();
+    nbVarTmpCourant--;  
     ts_ajouter($1, nom_fonc, flagConst, 1);  
-    fprintf(fp, "AFC %d %d\n", ts_addr($1, nom_fonc), $3);
+    fprintf(fp, "COP %d %d\n", ts_addr($1, nom_fonc), $3);
     ligneAsmCourant++;
   } else { 
     logger_lerror(yylineno, "fonction %s : Symbole %s déjà déclaré\n", nom_fonc, $1); 
   }}
-| VAR tVIRGULE VariablesDeclarations {
+| VAR tVIRGULE  {
   if (ts_addr($1, nom_fonc) == -1) { 
     ts_ajouter($1, nom_fonc, flagConst, 0);
   } else { 
     logger_lerror(yylineno, "fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
-  }}
-| VAR tEGAL NOMBRE tVIRGULE VariablesDeclarations {
+  }} VariablesDeclarations
+| VAR tEGAL Expression tVIRGULE  {
   if (ts_addr($1, nom_fonc) == -1) { 
+    ts_print();
+    ts_depiler();
+    nbVarTmpCourant--;
     ts_ajouter($1, nom_fonc, flagConst, 1); 
-    fprintf(fp, "AFC %d %d\n", ts_addr($1, nom_fonc), $3);
+    fprintf(fp, "COP %d %d\n", ts_addr($1, nom_fonc), $3);
     ligneAsmCourant++;
   } else { 
     logger_lerror(yylineno, "fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
-  }}
+  }} VariablesDeclarations
+
 ;
 
 
@@ -281,9 +288,9 @@ NOMBRE
 | VAR                           
 {
   if (ts_addr($1, nom_fonc) == -1) {
-    logger_lerror(yylineno, "fonction %s : Variable %s non déclarée\n", nom_fonc, $1); 		
+    logger_lerror(yylineno, "fonction %s : Variable %s non déclarée\n", nom_fonc, $1);    
   } else if (est_initialise($1, nom_fonc) == 0) {
-   logger_lerror(yylineno, "fonction %s : Variable %s non initialisée\n", nom_fonc, $1);	
+    logger_lerror(yylineno, "fonction %s : Variable %s non initialisée\n", nom_fonc, $1); 
   } else { 
     sprintf(nomVarTmpCourant, "var_tmp%d", nbVarTmpCourant);
     logger_info("Stocker var %s dans var temporaire %s\n", $1, nomVarTmpCourant);
