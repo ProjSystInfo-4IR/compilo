@@ -1,6 +1,6 @@
 const int b = 4 ; // constante globale
 //int variable = 3 *  b / 2 ;  // variable initialisée à -6
-int variable = b  ; 
+int variable = 2 ; 
 
 // déclaration de fonction 
 ok3(int a) ; ok4() ; 

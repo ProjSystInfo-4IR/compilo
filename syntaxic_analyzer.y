@@ -81,7 +81,7 @@
 
  /* On peut déclarer des variables globales, mais ensuite, il faut passer à l'execution du main. 
     La déclaration/définition de fonctions peut se faire avant ou après le main  */ 
-Input:			Declarations { fprintf(fp, "JMP %s %s\n", MARQUEUR_FCT, MAIN); ligneAsmCourant++; } DebFonctions MainProg DebFonctions ; 
+Input:			Declarations { fprintf(fp, "CALL %s %s %d\n", MARQUEUR_FCT, MAIN, NB_ARGS_MAIN); ligneAsmCourant++; } DebFonctions MainProg DebFonctions ; 
 
 
 /* Détection de fonctions et ses arguments */ 
@@ -166,7 +166,7 @@ VariablesDeclarations:  VAR tFININSTRUCTION {
   }}
 | VAR tEGAL Expression tFININSTRUCTION {
   if (ts_addr($1, nom_fonc) == -1) { 
-    ts_print();
+    //ts_print();
     ts_depiler();
     nbVarTmpCourant--;  
     ts_ajouter($1, nom_fonc, flagConst, 1);  
@@ -183,7 +183,7 @@ VariablesDeclarations:  VAR tFININSTRUCTION {
   }} VariablesDeclarations
 | VAR tEGAL Expression tVIRGULE  {
   if (ts_addr($1, nom_fonc) == -1) { 
-    ts_print();
+    //ts_print();
     ts_depiler();
     nbVarTmpCourant--;
     ts_ajouter($1, nom_fonc, flagConst, 1); 
