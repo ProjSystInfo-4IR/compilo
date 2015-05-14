@@ -24,30 +24,24 @@ struct ts_parametres {
 // ATTENTION ! Limitation à 1024 variables !
 // index_tab est l'index courant dans le tableau
 int index_tab ; 
+int index_adr_mem ; 
 struct ts_parametres table_symboles[TAILLE] ; 
 
 
-//fonction qui met a zero l'index et qui alloue mémoire au tableau et l'initialise (memset)
+//fonction qui met 0 à l'index et qui alloue mémoire au tableau et l'initialise (memset)
 void ts_init() {
   index_tab = 0 ; 
+  index_adr_mem = 0 ; 
   memset(table_symboles, 0 , TAILLE*sizeof(struct ts_parametres)) ; 
   ts_ajouter(NOM_VAR_ZERO, GLOBAL, 1, 1);
   logger_info("# Initialisation du tableau de symboles\n");
 }
 
-
-// retourner adresse mémoire variable
-// retourne -1 si la variable n'existe pas 
-int ts_addr(char * nom, char * func) {
-  int i ; 
-  int adresseMemoireVariable = -1 ;   
-  for(i = 0 ; i < index_tab ; i++){
-    if (strcmp(table_symboles[i].nom,nom) == 0 && ( strcmp(table_symboles[i].func,func) == 0 ||  strcmp(table_symboles[i].func, GLOBAL) == 0  )) {
-      adresseMemoireVariable = table_symboles[i].adrMem ; 
-    }
-  }
-  return adresseMemoireVariable ; 
+//fonction qui met a zero l'index de l'adressage mémoire (fonction utilisée en début de fonction)
+void init_adr_mem(int N) { 
+  index_adr_mem = N ; 
 }
+
 
 
 // ajout dans table des symboles 
@@ -56,8 +50,9 @@ void ts_ajouter(char * nom, char * func , int est_constant, int est_initialise) 
   table_symboles[index_tab].func = func ; 
   table_symboles[index_tab].is_constant = est_constant ; 
   table_symboles[index_tab].is_initialized = est_initialise ; 
-  table_symboles[index_tab].adrMem = index_tab ; 
+  table_symboles[index_tab].adrMem = index_adr_mem ; 
   index_tab++ ;   
+  index_adr_mem++ ;
 }
 
 
@@ -67,17 +62,45 @@ void ts_depiler() {
     logger_error("Erreur table symbole : Action dépiler impossible\n");
     return;
   }
-  index_tab-- ;   
+  index_tab-- ;  
+  index_adr_mem-- ;
 }
 
 /*  GETTERS  */  
 
+// retourner index  mémoire variable
+// retourne -1 si la variable n'existe pas 
+int get_index(char * nom, char * func){
+  int i ; 
+  int ret = -1 ;   
+  for(i = 0 ; i < index_tab ; i++){
+    if (strcmp(table_symboles[i].nom,nom) == 0 && ( strcmp(table_symboles[i].func,func) == 0 ||  strcmp(table_symboles[i].func, GLOBAL) == 0  )) {
+      ret = i ; 
+    }
+  }
+  return ret ;
+}
+
+// retourner adresse mémoire variable
+// retourne -1 si la variable n'existe pas 
+int ts_addr(char * nom, char * func) {
+  int ret ; 
+  int i = get_index(nom,func) ; 
+  if (i == -1) {
+    ret = -1 ;  
+  }   
+  else {
+    ret = table_symboles[get_index(nom,func)].adrMem ;
+  }
+  return ret ; 
+}
+
 int est_constant(char * nom, char * func) {   
-  return table_symboles[ts_addr(nom, func)].is_constant  ; 
+  return table_symboles[get_index(nom,func)].is_constant ;
 }
 
 int est_initialise(char * nom, char * func) {   
-  return table_symboles[ts_addr(nom, func)].is_initialized  ; 
+  return table_symboles[get_index(nom,func)].is_initialized ; 
 }
 
 
@@ -97,11 +120,12 @@ void ts_print() {
 
 // affecter, initialiser
 void ts_affect(char * nom, char * func) {   
-  table_symboles[ts_addr(nom, func)].is_initialized = 1 ; 
+  table_symboles[get_index(nom,func)].is_initialized = 1 ; 
 }
 
+
 void ts_setConstant(char * nom, char * func) {   
-  table_symboles[ts_addr(nom, func)].is_constant = 1 ; 
+  table_symboles[get_index(nom,func)].is_constant = 1 ; 
 }
 
 

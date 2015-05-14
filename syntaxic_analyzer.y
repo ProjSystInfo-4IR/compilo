@@ -42,6 +42,10 @@
   int nb_args ; // nombre d'arguments de la fonction courante  
   int adresseArgs[NB_ARGS_MAX] ; // tableau contenant les adresses (dans la table des symboles) des arguments d'une fonction
   int NB_ARGS_MAIN = 0 ; // la fonction main ne prend pas en charge d'arguments
+
+  int nb_var_globales ; // nombre actuel de variables globles
+  int nb_var_locales ;  // nombre actuel de variable dans la fonction en question
+
   int cpt ; // variable int utilisée en guise de compteur
   
   char* nom_fonc  ; // nom de la fonction en question 
@@ -81,11 +85,11 @@
 
  /* On peut déclarer des variables globales, mais ensuite, il faut passer à l'execution du main. 
     La déclaration/définition de fonctions peut se faire avant ou après le main  */ 
-Input:			Declarations { fprintf(fp, "CALL %s %s %d\n", MARQUEUR_FCT, MAIN, NB_ARGS_MAIN); ligneAsmCourant++; } DebFonctions MainProg DebFonctions ; 
+Input:			Declarations { fprintf(fp, "CALL %s %s %d %d\n", MARQUEUR_FCT, MAIN, NB_ARGS_MAIN, nb_var_globales); ligneAsmCourant++; } DebFonctions MainProg DebFonctions ; 
 
 
 /* Détection de fonctions et ses arguments */ 
-DebFonctions:           VAR {nb_args = 0 ; nom_fonc = $1 ;} tPARO ListeArgs tPARF { ajout_fct($1, nb_args) ; } SuiteFct DebFonctions | ; 
+DebFonctions:           VAR {nb_args = 0 ; init_adr_mem(nb_var_globales) ; nom_fonc = $1 ;} tPARO ListeArgs tPARF { ajout_fct($1, nb_args) ;  nb_var_locales = nb_args ; } SuiteFct DebFonctions | ; 
 
 ListeArgs: Type Arg Args | ; 
 
@@ -133,6 +137,9 @@ DefFonction:	        tACCO {
 /* Détection du main */ 
 MainProg:		tMAIN 
 { 
+  nb_args = NB_ARGS_MAIN ;
+  nb_var_locales = 0 ;
+  init_adr_mem(nb_var_globales) ;
   nom_fonc = MAIN ; 
   ajout_fct(MAIN, NB_ARGS_MAIN) ; 
   set_code_decl(MAIN, NB_ARGS_MAIN) ; 
@@ -161,38 +168,67 @@ Declaration: tINT  {flagConst = 0;} VariablesDeclarations
 VariablesDeclarations:  VAR tFININSTRUCTION {
   if (ts_addr($1, nom_fonc) == -1) { 
     ts_ajouter($1, nom_fonc, flagConst, 0);
-  } else { 
+    if(strcmp(nom_fonc,GLOBAL)==0){
+      nb_var_globales++ ; 
+    }
+    else {
+      nb_var_locales++ ; 
+    }
+  } 
+  else { 
     logger_lerror(yylineno, "fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
-  }}
+  }
+}
 | VAR tEGAL Expression tFININSTRUCTION {
   if (ts_addr($1, nom_fonc) == -1) { 
-    //ts_print();
+    if(strcmp(nom_fonc,GLOBAL)==0){
+      nb_var_globales++ ; 
+    }
+    else {
+      nb_var_locales++ ; 
+    }
     ts_depiler();
     nbVarTmpCourant--;  
     ts_ajouter($1, nom_fonc, flagConst, 1);  
     fprintf(fp, "COP %d %d\n", ts_addr($1, nom_fonc), $3);
     ligneAsmCourant++;
-  } else { 
+  } 
+  else { 
     logger_lerror(yylineno, "fonction %s : Symbole %s déjà déclaré\n", nom_fonc, $1); 
-  }}
+  }
+}
 | VAR tVIRGULE  {
   if (ts_addr($1, nom_fonc) == -1) { 
     ts_ajouter($1, nom_fonc, flagConst, 0);
-  } else { 
+    if(strcmp(nom_fonc,GLOBAL)==0){
+      nb_var_globales++ ; 
+    }
+    else {
+      nb_var_locales++ ; 
+    } 
+  } 
+  else { 
     logger_lerror(yylineno, "fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
-  }} VariablesDeclarations
+  }
+} VariablesDeclarations
 | VAR tEGAL Expression tVIRGULE  {
   if (ts_addr($1, nom_fonc) == -1) { 
-    //ts_print();
-    ts_depiler();
-    nbVarTmpCourant--;
-    ts_ajouter($1, nom_fonc, flagConst, 1); 
-    fprintf(fp, "COP %d %d\n", ts_addr($1, nom_fonc), $3);
-    ligneAsmCourant++;
-  } else { 
-    logger_lerror(yylineno, "fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
-  }} VariablesDeclarations
-
+      if(strcmp(nom_fonc,GLOBAL)==0){
+	     nb_var_globales++ ; 
+      }
+      else {
+               nb_var_locales++ ; 
+      }
+      ts_depiler();
+      nbVarTmpCourant--;
+      ts_ajouter($1, nom_fonc, flagConst, 1); 
+      fprintf(fp, "COP %d %d\n", ts_addr($1, nom_fonc), $3);
+      ligneAsmCourant++;
+  } 
+  else { 
+      logger_lerror(yylineno, "fonction %s : Symbole %s déjà déclarée\n", nom_fonc, $1); 
+ }
+} VariablesDeclarations
 ;
 
 
@@ -212,7 +248,7 @@ Instruction:  Affichage tFININSTRUCTION
 AppelFonction:	VAR {nb_args = 0 ;} tPARO ListeArgsFct tPARF tFININSTRUCTION 
 { 
   if(fct_exist($1, nb_args) == 1) {
-  fprintf(fp, "CALL %s %s %d\n", MARQUEUR_FCT, $1, nb_args);  
+    fprintf(fp, "CALL %s %s %d %d\n", MARQUEUR_FCT, $1, nb_args, nb_var_locales+nb_var_globales);  
   ligneAsmCourant++;
   logger_info ("Fonction %s appelée \n", $1) ;   
   }
@@ -264,7 +300,7 @@ Affectation:   VAR tEGAL Expression {
       nbVarTmpCourant--;
     }
     else {
-      logger_lerror(yylineno, "fonction %s : Constante %s initialisée détectée, modification impossible \n", nom_fonc, $1)  ; 	
+      logger_lerror(yylineno, "fonction %s : Constante %s initialisée détectée, modification impossible, est_constant($1, nom_fonc) = %d \n", nom_fonc, $1, est_constant($1, nom_fonc))  ; 	
     }
   }
   else {
@@ -422,6 +458,7 @@ void remplacerMarqueursFCT(FILE* fileAsm, char* finalFilename) {
   char instruction[WORD_CAPACITY];
   char nom_fct[WORD_CAPACITY];
   int nombre_arguments ; 
+  int nb_variables ; 
   FILE* fp2 = fopen(finalFilename, "w");
   
   logger_info("\n Remplacement des marqueurs FCT  \n") ;	
@@ -429,7 +466,7 @@ void remplacerMarqueursFCT(FILE* fileAsm, char* finalFilename) {
   while((read = getline(&line, &len, fileAsm)) != -1) {
     logger_info("%2d : %s", lineNum, line);
     // read each word of line
-    c = sscanf(line,"%s %s %s %d",instruction, possibleMarqueur, nom_fct, &nombre_arguments);   // parse line to 3 parts 
+    c = sscanf(line,"%s %s %s %d %d",instruction, possibleMarqueur, nom_fct, &nombre_arguments, &nb_variables);   // parse line to 3 parts 
     if (!strcmp(possibleMarqueur, MARQUEUR_FCT)) {
       // Marqueur trouvé !
       // XXX: cette technique suppose une telle format de l'instruction : INSTRUCTION MARQUEUR NOM_FCT 
@@ -438,7 +475,7 @@ void remplacerMarqueursFCT(FILE* fileAsm, char* finalFilename) {
 	/* afficher nom fonction et nombre arguments  
            fprintf(fp2, "%s %d %s %d \n", instruction, get_start(nom_fct, nombre_arguments), nom_fct, nombre_arguments);
         */
-        fprintf(fp2, "%s %d\n", instruction, get_start(nom_fct, nombre_arguments));  
+        fprintf(fp2, "%s %d %d\n", instruction, get_start(nom_fct, nombre_arguments), nb_variables);  
       }
       else {
 	fprintf(fp2, "%s", line);
@@ -519,6 +556,8 @@ int main(int argc, char** argv) {
   FILE* inputFile;
   
   nom_fonc = GLOBAL  ; 
+  nb_var_globales = 1 ; 
+  nb_var_locales = 0 ;  
 
   /* gestion des flags de la commande terminal */ 
   while ((opt = getopt(argc, argv, "vo:")) != -1) {
