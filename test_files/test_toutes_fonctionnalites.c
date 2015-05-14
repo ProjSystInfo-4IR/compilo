@@ -3,65 +3,13 @@ int variable = -3 *  b / 2 ;  // variable initialisée à -6
 
 
 // déclaration de fonction 
-ok3(int a) ; ok4() ; 
+ok3(int a) ; ok2() ; ok(const int b2, int c, int d) ;
 
 
-// définition de la fonction ok(const int b) 
-ok(const int b2, int c, int d){   
-
-  printf("\nfonction ok : ") ; 
-  variable = 77 ; 
-
-  // affichage des arguments
-  printf(b2) ; printf(" ") ; 
-  printf(c) ; printf(" ") ; 
-  printf(d) ; printf(" ") ;
-  printf((b2+c+d)*-5) ; 
-  printf("\n") ;
-}
-
-ok5() ; 
-
-ok2(){ 
-  int z = 14 ;  
-  int cpt = 4 ;  
-
-  printf("\n");
-  printf("fonction ok2\n") ; 
-  
-  printf("cpt = ") ; 
-  printf(cpt) ;
-  printf("\n"); 
-
-  ok(5,7,2) ; 
-
-  printf("\ncpt = ") ; 
-  printf(cpt) ;
-  printf("\n");
-
-  ok3(5+z/(b+b)) ; 
-
-  printf("\ncpt = ") ; 
-  printf(cpt) ;
-  printf("\n");
-
-
-  if (b/7) { 
-    z = 7 ; printf("changement valeur z à 7 \n") ; 
-  }  
- 
-  variable = -z * 5 + 2 / (b+-2) ; // variable = -69 ou -34
-  printf("variable = ") ; 
-  printf(variable) ;
-  printf("\n");
-
-  while(cpt) {
-    cpt = cpt - 1 ; 
-    printf(cpt) ; 
-    printf(" ") ; 
-  }
-  printf("\n");
-} 
+ok5(){
+int c = b + variable ; 
+printf(-c) ; 
+}  
 
 // programme principal 
 main() { 
@@ -126,6 +74,61 @@ main() {
       printf("Dans la deuxième boucle if\n") ;
     }    
   }
+}
+
+ok2(){ 
+  int z = 14 ;  
+  int cpt = 4 ;  
+
+  printf("\n");
+  printf("fonction ok2\n") ; 
+  
+  printf("cpt = ") ; 
+  printf(cpt) ;
+  printf("\n"); 
+
+  ok(5,7,2) ; 
+
+  printf("\ncpt = ") ; 
+  printf(cpt) ;
+  printf("\n");
+
+  ok3(5+z/(b+b)) ; 
+
+  printf("\ncpt = ") ; 
+  printf(cpt) ;
+  printf("\n");
+
+
+  if (b/7) { 
+    z = 7 ; printf("changement valeur z à 7 \n") ; 
+  }  
+ 
+  variable = -z * 5 + 2 / (b+-2) ; // variable = -69 ou -34
+  printf("variable = ") ; 
+  printf(variable) ;
+  printf("\n");
+
+  while(cpt) {
+    cpt = cpt - 1 ; 
+    printf(cpt) ; 
+    printf(" ") ; 
+  }
+  printf("\n");
+} 
+
+// définition de la fonction ok(const int b) 
+ok(const int b2, int c, int d){   
+
+  printf("\nfonction ok : ") ; 
+  variable = 77 ; 
+
+  // affichage des arguments
+  printf(b2) ; printf(" ") ; 
+  printf(c) ; printf(" ") ; 
+  printf(d) ; printf(" ") ;
+  printf((b2+c+d)*-5) ; 
+  printf("\n") ;
 }
 
 /* ancienne définition de la fonction ok3(int a) précédemment déclarée
