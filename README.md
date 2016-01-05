@@ -1,5 +1,5 @@
 # compilo
-Compilateur du langage C (simplifié) basé sur LEX et YACC en instructions assembleur orientées mémoire
+Compilateur du langage C (simplifié) basé sur LEX et YACC en instructions assembleur (ASM) orientées mémoire
 
 ## Utilisation 
 Téléchargement des fichiers à partir de notre répertoire Git “compilo”
